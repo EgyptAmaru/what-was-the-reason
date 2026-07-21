@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Was the Reason?</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Landing -->
+<section id="landing" class="screen">
+  <div class="landing-inner">
+    <div class="four-dots" aria-hidden="true"><span class="d1"></span><span class="d2"></span><span class="d3"></span><span class="d4"></span></div>
+    <h1>What Was the Reason<span class="q">?</span></h1>
+    <p class="tagline">A social reasoning game. Think out loud together.</p>
+    <form id="team-form">
+      <div class="team-input red">
+        <label for="team1">Team #1 Name</label>
+        <input id="team1" type="text" autocomplete="off" placeholder="Enter a team name">
+      </div>
+      <div class="team-input blue">
+        <label for="team2">Team #2 Name</label>
+        <input id="team2" type="text" autocomplete="off" placeholder="Enter a team name">
+      </div>
+      <button type="submit" class="start-btn">Start Game</button>
+    </form>
+  </div>
+</section>
+
+<!-- Board -->
+<section id="board-screen" class="screen">
+  <header class="board-top">
+    <div class="team-status red">
+      <div class="tname"><span id="t1-name"></span> <span class="pts" id="t1-pts">0</span></div>
+      <div class="bar-track"><div class="bar-fill" id="t1-bar"></div></div>
+    </div>
+    <div class="board-mid">
+      <div class="four-dots" aria-hidden="true"><span class="d1"></span><span class="d2"></span><span class="d3"></span><span class="d4"></span></div>
+      <div class="gtitle">What Was the Reason?</div>
+      <label class="unlock-toggle">
+        <input type="checkbox" id="override-toggle">
+        <span class="switch" aria-hidden="true"></span>
+        Unlock all bands
+      </label>
+    </div>
+    <div class="team-status blue right">
+      <div class="tname"><span id="t2-name"></span> <span class="pts" id="t2-pts">0</span></div>
+      <div class="bar-track"><div class="bar-fill" id="t2-bar"></div></div>
+    </div>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer class="board-foot">
+    <button id="restart-btn" class="quiet-btn" type="button">Restart game</button>
+  </footer>
+</section>
+
+<!-- Expanded question card -->
+<section id="card-screen" class="screen">
+  <div class="flip-wrap">
+    <div class="flip-inner" id="flip-inner">
+      <div class="face front">
+        <div class="card-top">
+          <button class="close-x" type="button" data-close aria-label="Close">✕</button>
+          <span class="col-chip" id="front-chip"></span>
+          <span class="timer-slot">
+            <button class="timer-chip" id="timer-chip" type="button"></button>
+            <button class="timer-reset" id="timer-reset" type="button" aria-label="Reset timer">↺</button>
+          </span>
+        </div>
+        <div class="side-label">Question</div>
+        <div class="face-body">
+          <div class="body-inner">
+            <div class="qtext" id="q-text"></div>
+            <div id="q-visual"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-split">
+            <div class="winner-box">
+              <div class="wlabel">Winner</div>
+              <div class="wchips">
+                <button class="wchip red" type="button" data-winner="0"></button>
+                <button class="wchip blue" type="button" data-winner="1"></button>
+              </div>
+            </div>
+            <button class="answer-btn" id="to-answer" type="button">Answer</button>
+          </div>
+        </div>
+      </div>
+      <div class="face back">
+        <div class="card-top">
+          <button class="close-x" type="button" data-close aria-label="Close">✕</button>
+          <span class="col-chip" id="back-chip"></span>
+          <span class="timer-slot"></span>
+        </div>
+        <div class="side-label">Answer</div>
+        <div class="face-body">
+          <div class="body-inner">
+            <div class="atext" id="a-text"></div>
+            <div id="a-visual"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="footer-split">
+            <div class="winner-box">
+              <div class="wlabel">Winner</div>
+              <div class="wchips">
+                <button class="wchip red" type="button" data-winner="0"></button>
+                <button class="wchip blue" type="button" data-winner="1"></button>
+              </div>
+            </div>
+            <button class="answer-btn" id="to-question" type="button">Question</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Game end -->
+<section id="end-screen" class="screen">
+  <div class="end-inner">
+    <div class="four-dots" aria-hidden="true"><span class="d1"></span><span class="d2"></span><span class="d3"></span><span class="d4"></span></div>
+    <p class="end-eyebrow" id="end-eyebrow">And the winner is</p>
+    <h2 id="end-title"></h2>
+    <div class="end-summary" id="end-summary"></div>
+    <button class="start-btn" id="play-again" type="button">Play Again</button>
+  </div>
+</section>
+
+<script src="data/questions.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/format.js"></script>
+<script src="js/state.js"></script>
+<script src="js/score.js"></script>
+<script src="js/board.js"></script>
+<script src="js/card.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
