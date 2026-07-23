@@ -22,7 +22,16 @@
         (the https://...firebasedatabase.app URL).
 
    These values identify the project but are not secrets; they are safe to
-   commit in a public repo. Access is governed by the database rules. */
+   commit in a public repo. Access is governed by the database rules.
+
+   Expected alert: GitHub secret scanning flags the apiKey below as an
+   exposed "Google API Key". That is a false positive for a Firebase web
+   config: the key is a client identifier every visitor downloads by design,
+   not a credential, and access control comes from the database rules above.
+   Safe to close the alert as a false positive. Optional hardening: in
+   Google Cloud console, restrict the key to Firebase APIs and to requests
+   from the site's domain. Rotating it buys nothing; the replacement would
+   be public the moment it ships. */
 
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyA8J6PiM7rqpQgAYR1me0SHoX8jB80eyhI",
