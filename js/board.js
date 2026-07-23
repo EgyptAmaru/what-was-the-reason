@@ -120,6 +120,17 @@ window.Board = (function () {
     }
   }
 
+  // Same openability rule the tile click handler enforces: active squares
+  // open, retired squares re-open (to adjust winners), locked squares do not.
+  function isOpenable(id) {
+    var parts = id.split(':');
+    var row = Number(parts[1]);
+    var known = D.columns.some(function (c) { return c.id === parts[0]; }) &&
+      D.rows.some(function (r) { return r.row === row; });
+    if (!known) return false;
+    return Boolean(State.data.retired[id]) || rowIsActive(row);
+  }
+
   function allRetired() {
     return D.columns.every(function (col) {
       return D.rows.every(function (r) {
@@ -135,6 +146,7 @@ window.Board = (function () {
     activeBandIndex: activeBandIndex,
     rowBand: rowBand,
     allRetired: allRetired,
+    isOpenable: isOpenable,
     colColor: colColor
   };
 })();

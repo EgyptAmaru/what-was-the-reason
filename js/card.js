@@ -8,6 +8,12 @@ window.Card = (function () {
   var currentQid = null;
   var timer = { remaining: 0, total: 0, running: false, handle: null };
 
+  // Tells the host-console sync layer (if active) that card UI state moved
+  // in a way State.save does not capture: open/flip/close and the timer.
+  function ping() {
+    if (window.Sync) Sync.notify();
+  }
+
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -64,17 +70,20 @@ window.Card = (function () {
         if (timer.remaining <= 0) {
           timer.remaining = 0;
           stopTimer();
+          ping();
         }
         renderTimer();
       }, 1000);
     }
     renderTimer();
+    ping();
   }
 
   function resetTimer() {
     stopTimer();
     timer.remaining = timer.total;
     renderTimer();
+    ping();
   }
 
   /* ---------- winner chips ---------- */
@@ -154,6 +163,7 @@ window.Card = (function () {
 
     document.getElementById('flip-inner').classList.remove('flipped');
     Main.showScreen('card-screen');
+    ping();
   }
 
   function flipToAnswer() {
@@ -162,10 +172,12 @@ window.Card = (function () {
       State.data.revealed[currentQid] = true;
       State.save();
     }
+    ping();
   }
 
   function flipToQuestion() {
     document.getElementById('flip-inner').classList.remove('flipped');
+    ping();
   }
 
   function close() {
@@ -174,6 +186,22 @@ window.Card = (function () {
     currentQid = null;
     Main.showScreen('board-screen');
     Main.afterClose(id);
+    ping();
+  }
+
+  // Read-only view of the card for the sync layer's state snapshot. The
+  // timer carries a timestamp so a remote screen can tick locally.
+  function current() {
+    return {
+      qid: currentQid,
+      face: document.getElementById('flip-inner').classList.contains('flipped') ? 'answer' : 'question',
+      timer: {
+        total: timer.total,
+        remaining: timer.remaining,
+        running: timer.running,
+        at: Date.now()
+      }
+    };
   }
 
   /* ---------- wiring ---------- */
@@ -196,5 +224,15 @@ window.Card = (function () {
     });
   }
 
-  return { open: open, init: init };
+  return {
+    open: open,
+    init: init,
+    close: close,
+    flipToAnswer: flipToAnswer,
+    flipToQuestion: flipToQuestion,
+    toggleTimer: toggleTimer,
+    resetTimer: resetTimer,
+    toggleWinner: toggleWinner,
+    current: current
+  };
 })();

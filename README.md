@@ -76,11 +76,25 @@ The frame travels. Estimation, Logic, Data Literacy, and Strategy all exist in p
 
 The way the game unfolds lives, nonetheless, is based on how it's hosted. The host needs to frame it as "your brain is supposed to get this wrong, that's the point," so that reveals land as "we all fell for it" rather than "you got it wrong."
 
+## Host console (optional second screen)
+
+The board on the TV stays player-clean: cards never show hints, host notes, or takeaways. Those live on `host.html`, a phone-sized companion page for the host. It is optional; the game is fully playable from the TV alone, with the host reading notes from a printout or the content files instead.
+
+With sync enabled, the host pairs the phone by tapping "Host console" in the TV footer and scanning the QR code (or typing the 4-letter room code). The phone then becomes two things at once:
+
+- **A context-aware notes screen.** Whatever question is open on the TV, the phone shows that question's hints, host note, answer, scoring gate, expected reasoning paths, and takeaway.
+- **A remote control.** Open and close cards, flip to the answer, select winners, and run the timer, all without walking to the TV.
+
+The TV remains authoritative. If the connection hiccups, the game plays on unaffected and the phone falls back to browse mode, a hand-navigated notes reader that also works with no sync configured at all.
+
+Sync runs through a small Firebase Realtime Database project. Setup steps and the database rules live in `js/firebase-config.js`; the game detects the config and enables pairing automatically.
+
 ## Status
 
 - **Theme:** Math (v1).  
 - **Players:** Two teams of roughly 3 to 4 (about 8 total).  
 - **Architecture:** Settled (columns, rows, acts, turn structure, host role, the Act 3 reveal mechanic, and the one-spokesperson-per-answer rule).  
 - **Content:** All four columns complete (24 questions), with host notes. Estimation in `content/estimation.md`; Strategy in `content/strategy.md`; Logic / Paradox in `content/logic-paradox.md`; Data Literacy in `content/data-literacy.md`. The web build is complete; the next phase is playtesting.  
+- **Host console:** Built and verified end to end. An optional second screen (`host.html`) gives the host context-aware notes and remote control of the board over Firebase sync, with a no-connection browse mode as fallback. Deployment (GitHub Pages) is the remaining step.  
 - **Deferred to a later version:** solo-answer wager (a scoring multiplier for going alone), formal partial-credit scoring, and a confidence-wager finale (teams secretly bet points on their own accuracy for Row 6). All three were kept out of v1 to keep the rules teachable in about two minutes. See CLAUDE.md for the full v1 scope, open levers (like the points curve), and parked question ideas.
 

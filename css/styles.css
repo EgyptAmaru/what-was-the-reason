@@ -378,6 +378,42 @@ button { font-family: inherit; color: inherit; }
   .face { padding: 16px 18px 18px; }
 }
 
+/* ---------- host console chip + pairing overlay (sync.js injects these) ---------- */
+
+.host-chip { margin-right: 22px; text-decoration: none; }
+.host-chip strong {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+  letter-spacing: 0.08em; color: var(--ink);
+}
+.host-chip:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.host-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(51, 48, 43, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.host-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.25s ease; }
+.host-pop {
+  background: var(--card); border-radius: 18px; box-shadow: var(--lift);
+  padding: 30px 36px 26px; text-align: center; max-width: min(420px, 90vw);
+}
+.host-pop .hp-title {
+  font-size: 0.75rem; font-weight: 700; color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: 0.13em;
+}
+.host-pop .hp-code {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+  font-size: 2.6rem; letter-spacing: 0.18em; margin: 6px 0 14px;
+}
+.host-pop .hp-qr { display: flex; justify-content: center; margin-bottom: 14px; }
+.host-pop .hp-qr img, .host-pop .hp-qr canvas {
+  border: 10px solid #F3EDE0; border-radius: 8px; background: #F3EDE0;
+}
+.host-pop .hp-url { font-size: 0.8rem; color: var(--ink-soft); word-break: break-all; }
+.host-pop .hp-hint { font-size: 0.8rem; color: var(--ink-soft); margin-top: 10px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
