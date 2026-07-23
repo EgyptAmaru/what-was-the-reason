@@ -103,15 +103,30 @@ window.Sync = (function () {
     return base + 'host.html?room=' + roomCode;
   }
 
-  function buildUi() {
-    var foot = document.querySelector('.board-foot');
-    if (!foot) return;
-
+  function makeChip() {
     var chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'quiet-btn host-chip';
     chip.innerHTML = 'Host console · <strong>' + roomCode + '</strong>';
-    foot.insertBefore(chip, foot.firstChild);
+    return chip;
+  }
+
+  function buildUi() {
+    var chips = [];
+
+    var foot = document.querySelector('.board-foot');
+    if (foot) {
+      var boardChip = makeChip();
+      foot.insertBefore(boardChip, foot.firstChild);
+      chips.push(boardChip);
+    }
+    var landing = document.querySelector('#landing .landing-inner');
+    if (landing) {
+      var landingChip = makeChip();
+      landingChip.classList.add('landing-host-chip');
+      landing.appendChild(landingChip);
+      chips.push(landingChip);
+    }
 
     var overlay = document.createElement('div');
     overlay.className = 'host-overlay';
@@ -132,7 +147,9 @@ window.Sync = (function () {
       });
     }
 
-    chip.addEventListener('click', function () { overlay.classList.add('show'); });
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () { overlay.classList.add('show'); });
+    });
     overlay.addEventListener('click', function (e) {
       if (e.target === overlay) overlay.classList.remove('show');
     });

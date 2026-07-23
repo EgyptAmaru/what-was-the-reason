@@ -112,11 +112,15 @@ window.Main = (function () {
     var on = false;
     try { on = localStorage.getItem(DARK_KEY) === '1'; } catch (e) { /* default light */ }
     applyDark(on);
-    var toggle = document.getElementById('dark-toggle');
-    toggle.checked = on;
-    toggle.addEventListener('change', function (e) {
-      applyDark(e.target.checked);
-      try { localStorage.setItem(DARK_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* ignore */ }
+    // One toggle on the landing page, one on the board; keep them in step.
+    var toggles = document.querySelectorAll('input[data-dark]');
+    toggles.forEach(function (t) {
+      t.checked = on;
+      t.addEventListener('change', function (e) {
+        applyDark(e.target.checked);
+        toggles.forEach(function (other) { other.checked = e.target.checked; });
+        try { localStorage.setItem(DARK_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* ignore */ }
+      });
     });
   }
 

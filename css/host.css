@@ -180,17 +180,26 @@ button { font-family: inherit; color: inherit; }
 }
 
 .timer-line {
-  display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
   font-family: 'Bricolage Grotesque', sans-serif;
 }
 .timer-line .t { font-weight: 600; font-size: 1.7rem; font-variant-numeric: tabular-nums; }
 .timer-line .t.done { color: var(--data); }
 .timer-line .tstate { font-family: 'Nunito Sans', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.1em; }
+.tl-btn {
+  font-family: 'Nunito Sans', sans-serif; font-size: 0.8rem; font-weight: 700;
+  border: 1px solid rgba(51, 48, 43, 0.25); border-radius: 999px;
+  background: none; cursor: pointer; padding: 6px 16px;
+}
+.tl-btn:first-of-type { margin-left: auto; }
+.tl-btn:active { transform: translateY(1px); }
+.tl-btn.quiet { border-color: transparent; color: var(--ink-soft); padding: 6px 8px; }
 
 .qcard {
   background: var(--card); border-radius: 16px; padding: 18px;
   box-shadow: 0 4px 14px rgba(51, 48, 43, 0.07); margin-bottom: 16px;
   overflow-wrap: break-word;
+  border-left: 3px solid rgba(51, 48, 43, 0.35);
 }
 .qcard .qtext { font-size: 1rem; }
 .qcard .qtext p { margin-bottom: 0.7em; }
@@ -200,6 +209,19 @@ button { font-family: inherit; color: inherit; }
 .hsec {
   background: var(--card); border-radius: 14px; margin-bottom: 10px;
   border: 1px solid rgba(51, 48, 43, 0.07);
+}
+/* Left accent + tag mark which schema section a field comes from:
+   Board Content (neutral ink), Scoring (green), Host Notes (gold).
+   The question card above carries the same neutral Board Content accent. */
+.hsec--board { border-left: 3px solid rgba(51, 48, 43, 0.35); }
+.hsec--scoring { border-left: 3px solid var(--strat); }
+.hsec--host { border-left: 3px solid var(--est); }
+.hsec--scoring .sec-tag { color: var(--strat); }
+.hsec--host .sec-tag { color: #a8894e; }
+.sec-tag {
+  margin-left: auto; padding-right: 10px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--ink-soft); opacity: 0.85;
 }
 .hsec summary {
   list-style: none; cursor: pointer; padding: 13px 16px;

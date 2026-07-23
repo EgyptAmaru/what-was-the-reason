@@ -8,11 +8,33 @@
 window.Charts = (function () {
   'use strict';
 
-  var MARK = '#b85f5f';
-  var INK = '#33302b';
-  var INK_SOFT = '#736c60';
-  var GRID = 'rgba(51,48,43,0.10)';
-  var AXIS = 'rgba(51,48,43,0.35)';
+  // Chart palettes per theme. SVG colors are baked in at render time, and a
+  // card is always (re)rendered after a theme change, so applyTheme() before
+  // each build is enough. Table colors ride on the CSS variables instead,
+  // so they adapt live.
+  var PALETTES = {
+    light: {
+      MARK: '#b85f5f',
+      INK: '#33302b',
+      INK_SOFT: '#736c60',
+      GRID: 'rgba(51,48,43,0.10)',
+      AXIS: 'rgba(51,48,43,0.35)'
+    },
+    dark: {
+      MARK: '#cf7a6a',
+      INK: '#e7e1d3',
+      INK_SOFT: '#a59d8e',
+      GRID: 'rgba(231,225,211,0.12)',
+      AXIS: 'rgba(231,225,211,0.40)'
+    }
+  };
+  var MARK, INK, INK_SOFT, GRID, AXIS;
+
+  function applyTheme() {
+    var p = document.body && document.body.classList.contains('dark')
+      ? PALETTES.dark : PALETTES.light;
+    MARK = p.MARK; INK = p.INK; INK_SOFT = p.INK_SOFT; GRID = p.GRID; AXIS = p.AXIS;
+  }
 
   /* ---------- shared helpers ---------- */
 
@@ -25,8 +47,8 @@ window.Charts = (function () {
       '.qvisual svg{max-width:100%;height:auto;font-family:inherit}' +
       '.qtable{border-collapse:collapse;margin:0 auto;font-variant-numeric:tabular-nums;text-align:left}' +
       '.qtable th{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;' +
-      'color:#736c60;padding:8px 18px;border-bottom:2px solid #33302b}' +
-      '.qtable td{font-size:0.98rem;padding:10px 18px;border-bottom:1px solid rgba(51,48,43,0.16)}' +
+      'color:var(--ink-soft,#736c60);padding:8px 18px;border-bottom:2px solid var(--ink,#33302b)}' +
+      '.qtable td{font-size:0.98rem;padding:10px 18px;border-bottom:1px solid var(--hairline,rgba(51,48,43,0.16))}' +
       '.qtable tr:last-child td{border-bottom:none}' +
       '.qtable td:first-child{font-weight:700}';
     document.head.appendChild(style);
@@ -244,6 +266,7 @@ window.Charts = (function () {
       var spec = specs[colId + ':' + row];
       if (!spec || !spec[side]) return null;
       ensureStyles();
+      applyTheme();
       return '<figure class="qvisual">' + spec[side]() + '</figure>';
     },
     // Removes flattened table text / build-note markers from the prompt,

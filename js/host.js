@@ -179,9 +179,21 @@ window.Host = (function () {
     }
   }
 
-  function sectionHtml(key, label, body) {
-    return '<details class="hsec" data-sec="' + key + '"' + (openSecs[key] ? ' open' : '') + '>' +
-      '<summary>' + label + '</summary><div class="hsec-body">' + body + '</div></details>';
+  // Sections are tagged by which source section of the content schema they
+  // come from (Board Content / Scoring / Host Notes), so the host can see at
+  // a glance what kind of material each is. Documentation fields (why it's
+  // this level, build/reskin/other notes) never render in the game.
+  var GROUPS = {
+    board: { label: 'Board content', cls: 'hsec--board' },
+    scoring: { label: 'Scoring', cls: 'hsec--scoring' },
+    host: { label: 'Host notes', cls: 'hsec--host' }
+  };
+
+  function sectionHtml(key, label, body, group) {
+    var g = GROUPS[group];
+    return '<details class="hsec ' + g.cls + '" data-sec="' + key + '"' + (openSecs[key] ? ' open' : '') + '>' +
+      '<summary>' + label + '<span class="sec-tag">' + g.label + '</span></summary>' +
+      '<div class="hsec-body">' + body + '</div></details>';
   }
 
   function questionHtml(qid, opts) {
@@ -215,20 +227,23 @@ window.Host = (function () {
       var t = timerNow();
       if (t) {
         var state = t.running ? 'running' : (t.remaining === t.total ? 'ready' : (t.remaining === 0 ? 'time' : 'paused'));
+        var timerLabel = t.running ? 'Pause' : (t.remaining === t.total ? 'Start' : (t.remaining === 0 ? 'Time' : 'Resume'));
         h += '<div class="timer-line"><span class="t' + (t.remaining === 0 ? ' done' : '') + '">' +
-          fmt(t.remaining) + '</span><span class="tstate">' + state + '</span></div>';
+          fmt(t.remaining) + '</span><span class="tstate">' + state + '</span>' +
+          '<button type="button" class="tl-btn" id="ctrl-timer" data-act="timer">' + timerLabel + '</button>' +
+          '<button type="button" class="tl-btn quiet" data-act="timer-reset" aria-label="Reset timer">&#8634;</button>' +
+          '</div>';
       }
     }
 
     h += '<div class="qcard"><div class="qtext">' + qBody + '</div>' + qVis + '</div>';
 
-    h += sectionHtml('hints', 'Hints', hintsHtml(q.hints));
-    if (q.hostNote) h += sectionHtml('hostNote', 'Host note', paras(q.hostNote));
-    h += sectionHtml('answer', 'Answer', aBody);
-    h += sectionHtml('gate', 'What earns the points', paras(q.scoringGate));
-    h += sectionHtml('path', 'How they might get there', paras(q.path));
-    if (q.takeaway) h += sectionHtml('takeaway', 'Takeaway', paras(q.takeaway));
-    h += sectionHtml('why', 'Why this level', paras(q.whyThisLevel));
+    h += sectionHtml('hints', 'Hints', hintsHtml(q.hints), 'host');
+    if (q.hostNote) h += sectionHtml('hostNote', 'Host note', paras(q.hostNote), 'host');
+    if (q.takeaway) h += sectionHtml('takeaway', 'Takeaway', paras(q.takeaway), 'host');
+    h += sectionHtml('answer', 'Answer', aBody, 'board');
+    h += sectionHtml('gate', 'What earns the points', paras(q.scoringGate), 'scoring');
+    h += sectionHtml('path', 'How they might get there', paras(q.path), 'scoring');
 
     return h;
   }
@@ -275,17 +290,12 @@ window.Host = (function () {
     var qid = snap.open.qid;
     var t = snap.teams || ['Team 1', 'Team 2'];
     var winners = (snap.winners && snap.winners[qid]) || [];
-    var timer = timerNow();
-    var timerLabel = !timer ? '' :
-      (timer.running ? 'Pause' : (timer.remaining === timer.total ? 'Start' : (timer.remaining === 0 ? 'Time' : 'Resume')));
     var flipLabel = snap.open.face === 'answer' ? 'Question' : 'Answer';
 
     return '<div class="cwrap">' +
       '<button type="button" class="ctrl primary" data-act="flip">' + flipLabel + '</button>' +
       '<button type="button" class="ctrl wred' + (winners.indexOf(0) !== -1 ? ' on' : '') + '" data-act="winner" data-team="0">' + esc(t[0]) + '</button>' +
       '<button type="button" class="ctrl wblue' + (winners.indexOf(1) !== -1 ? ' on' : '') + '" data-act="winner" data-team="1">' + esc(t[1]) + '</button>' +
-      '<button type="button" class="ctrl" id="ctrl-timer" data-act="timer">' + timerLabel + '</button>' +
-      '<button type="button" class="ctrl quiet" data-act="timer-reset" aria-label="Reset timer">&#8634;</button>' +
       '<button type="button" class="ctrl quiet" data-act="close" aria-label="Close card">&#10005;</button>' +
       '</div>';
   }
@@ -337,6 +347,15 @@ window.Host = (function () {
     var pt = e.target.closest('[data-act="preview-toggle"]');
     if (pt) { previewOn = !previewOn; render(); return; }
 
+    // Timer controls sit beside the readout in the live question view.
+    var tbtn = e.target.closest('[data-act="timer"], [data-act="timer-reset"]');
+    if (tbtn) {
+      if (mode === 'live' && snap && snap.open && !previewQid) {
+        send({ t: tbtn.dataset.act === 'timer' ? 'timer' : 'timer-reset' });
+      }
+      return;
+    }
+
     var tile = e.target.closest('.mini-tile');
     if (!tile) return;
     var qid = tile.dataset.qid;
@@ -358,12 +377,6 @@ window.Host = (function () {
         break;
       case 'winner':
         send({ t: 'winner', team: Number(btn.dataset.team) });
-        break;
-      case 'timer':
-        send({ t: 'timer' });
-        break;
-      case 'timer-reset':
-        send({ t: 'timer-reset' });
         break;
       case 'close':
         send({ t: 'close' });

@@ -9,7 +9,7 @@
   --ink-soft: #736C60;
   --hairline: rgba(51, 48, 43, 0.16);
   --tile: #d9d9d9;
-  --card: #F3EDE0;
+  --card: #E0D8C5;
   --est: #c8a96e;
   --logic: #9999dd;
   --strat: #6b9e78;
@@ -19,28 +19,24 @@
   --lift: 0 10px 26px rgba(51, 48, 43, 0.13);
 }
 
-/* Dark mode: board chrome, landing, and end screen darken via the variables
-   below. Card faces and the QR popover deliberately stay cream (the inner
-   scope re-pins the ink variables), because the charts and tables render
-   with fixed dark ink and must remain legible. */
+/* Dark mode: the whole page darkens via the variables below, cards
+   included (near-black faces against the dark stone background). Charts
+   re-render with a dark palette (js/charts.js applyTheme) and tables ride
+   on the CSS variables, so content stays legible in both themes. */
 body.dark {
   --paper: #22201C;
   --ink: #E7E1D3;
   --ink-soft: #A59D8E;
   --hairline: rgba(231, 225, 211, 0.15);
   --tile: #3E3B35;
-  --card: #2B2925;
+  --card: #1A1815;
   --lift: 0 10px 26px rgba(0, 0, 0, 0.5);
 }
-body.dark .face, body.dark .host-pop {
-  --paper: #E8E1D2;
-  --ink: #33302B;
-  --ink-soft: #736C60;
-  --hairline: rgba(51, 48, 43, 0.16);
-  --tile: #d9d9d9;
-  --card: #F3EDE0;
-  --lift: 0 10px 26px rgba(51, 48, 43, 0.13);
-  color: var(--ink);
+body.dark .face {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  border-left: 1px solid rgba(231, 225, 211, 0.07);
+  border-right: 1px solid rgba(231, 225, 211, 0.07);
+  border-bottom: 1px solid rgba(231, 225, 211, 0.07);
 }
 body.dark .bar-track { background: rgba(231, 225, 211, 0.12); }
 body.dark .act-row.locked .act-label { color: rgba(231, 225, 211, 0.32); }
@@ -166,6 +162,7 @@ button { font-family: inherit; color: inherit; }
 .board-mid .four-dots span { width: 7px; height: 7px; }
 .board-mid .gtitle { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 1.1rem; }
 .mid-toggles { display: flex; justify-content: center; gap: 18px; }
+.corner-toggle { position: absolute; top: 20px; right: 24px; margin-top: 0; }
 .unlock-toggle {
   margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;
   font-size: 0.75rem; font-weight: 600; color: var(--ink-soft); cursor: pointer;
@@ -412,6 +409,7 @@ button { font-family: inherit; color: inherit; }
 /* ---------- host console chip + pairing overlay (sync.js injects these) ---------- */
 
 .host-chip { margin-right: 22px; text-decoration: none; }
+.landing-host-chip { margin: 30px 0 0; }
 .host-chip strong {
   font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
   letter-spacing: 0.08em; color: var(--ink);
