@@ -1,6 +1,6 @@
 {
   "//": "GENERATED from content/*.md by tools/build-content.mjs. Do not edit; edit the Markdown in content/ and run: npm run build",
-  "generatedAt": "2026-07-21T02:44:00.503Z",
+  "generatedAt": "2026-07-23T03:49:16.059Z",
   "acts": [
     {
       "act": 1,

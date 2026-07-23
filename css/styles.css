@@ -19,6 +19,36 @@
   --lift: 0 10px 26px rgba(51, 48, 43, 0.13);
 }
 
+/* Dark mode: board chrome, landing, and end screen darken via the variables
+   below. Card faces and the QR popover deliberately stay cream (the inner
+   scope re-pins the ink variables), because the charts and tables render
+   with fixed dark ink and must remain legible. */
+body.dark {
+  --paper: #22201C;
+  --ink: #E7E1D3;
+  --ink-soft: #A59D8E;
+  --hairline: rgba(231, 225, 211, 0.15);
+  --tile: #3E3B35;
+  --card: #2B2925;
+  --lift: 0 10px 26px rgba(0, 0, 0, 0.5);
+}
+body.dark .face, body.dark .host-pop {
+  --paper: #E8E1D2;
+  --ink: #33302B;
+  --ink-soft: #736C60;
+  --hairline: rgba(51, 48, 43, 0.16);
+  --tile: #d9d9d9;
+  --card: #F3EDE0;
+  --lift: 0 10px 26px rgba(51, 48, 43, 0.13);
+  color: var(--ink);
+}
+body.dark .bar-track { background: rgba(231, 225, 211, 0.12); }
+body.dark .act-row.locked .act-label { color: rgba(231, 225, 211, 0.32); }
+body.dark .unlock-toggle .switch { background: rgba(231, 225, 211, 0.22); }
+body.dark .team-input input { border-color: rgba(231, 225, 211, 0.28); }
+body.dark .team-input input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(231, 225, 211, 0.1); }
+body.dark .team-input input::placeholder { color: #6E675C; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body { height: 100%; }
@@ -135,6 +165,7 @@ button { font-family: inherit; color: inherit; }
 .board-mid .four-dots { margin-bottom: 4px; }
 .board-mid .four-dots span { width: 7px; height: 7px; }
 .board-mid .gtitle { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 1.1rem; }
+.mid-toggles { display: flex; justify-content: center; gap: 18px; }
 .unlock-toggle {
   margin-top: 8px; display: inline-flex; align-items: center; gap: 8px;
   font-size: 0.75rem; font-weight: 600; color: var(--ink-soft); cursor: pointer;

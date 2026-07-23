@@ -101,6 +101,8 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 
 ## Web Build
 
+**Executing the build.** When executing the web build for the first time, read README.md first, then CLAUDE.md, then the four files in content/. With every build, before writing any code, show the plan: the tech stack you propose, the file and folder structure, and the visual direction.
+
 **Mapping:** 
 
 - **Column file directory.** Authored question content lives in `content/` (one file per column, e.g. `content/estimation.md`). This is the human-readable source of truth; Each column's squares are populated from its own file in `content/`:  
@@ -138,10 +140,11 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 
 **Board State**:
 
-- **Initializing the Board**: When first arriving at the board from the landing page, all squares are labeled and with the same color, but after a 3 second delay, the squares on the first 2 rows do a fade transition into color (see color by columns below) to signal that the first band is active. It is at this point that the squares on the first 2 rows become clickable.  
+- **Initializing the Board**: When first arriving at the board from the landing page, all squares are labeled and with the same color, but after a 1.5 second delay, the squares on the first 2 rows do a fade transition into color (see color by columns below) to signal that the first band is active. It is at this point that the squares on the first 2 rows become clickable.  
 - **Retiring Questions**: When a card’s “Answer” button is clicked (see details below), the game should register that the square corresponding to the card should return to a \#d9d9d9 color and its point label removed. The transition is executed as a fade animation and 1 second after the card is closed only, from the full board view, to signal to players that the question is retired.  
 - **Advancing Bands**: When the last question in a band is retired, the next 2 rows transition to color, similar to how the first 2 rows behaved upon landing on the page except the transition delay is 1 second after returning to a full view of the board. It is at this point that the squares on the next 2 rows become clickable.  
-- **Locked-Band Override**: There should be a toggle from the board view page that allows a user to unlock all bands simultaneously. This is an optional play mode that suspends the band system. Default is off. If toggled off and then back on, the earliest band that doesn’t have all questions answered becomes active and any higher level bands are locked.  
+- **Locked-Band Override**: There should be a toggle from the board view page, labeled "Unlock all acts", that allows a user to unlock all bands simultaneously. This is an optional play mode that suspends the band system. Default is off. If toggled off and then back on, the earliest band that doesn’t have all questions answered becomes active and any higher level bands are locked.  
+- **Dark Mode**: A toggle next to the unlock toggle, labeled "Dark mode", switches the page to a dark theme (board chrome, landing, and end screens darken; the warm palette and column colors hold). Card faces and the QR pairing popover deliberately stay cream in dark mode because charts and tables render with fixed dark ink and must stay legible. The preference is a display setting, not game state: it persists in its own localStorage key and survives "Restart game". Default is off (light).  
 - **Tracking Points**:   
   - *Registering Points*: When a winner(s) is selected from a question card (see details below), the point bar(s) grows in proportion to the points gained. This should be a glide animation to signal point growth. Both text and bar updates should trigger 1.5 seconds after the card is closed. Whichever winner is selected before the card is closed is what the system registers.   
   - *Adjusting Points*: If the card is re-opened after its been closed and the winners are adjusted, the points should add/subtract accordingly, with a glide animation happening in the correct direction. As before, the updates happen after a 1.5 second delay after the card is closed.   
@@ -184,8 +187,7 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 
 - HTML, CSS, and JavaScript should all be cleanly separated.  
 - The question source of truth stays in human-readable Markdown that I edit directly; generate the runtime data structure from it in the build — I should never have to edit JSON or YAML by hand.  
-- The local folder is the source of truth; push it *to* an empty GitHub repo (don't initialize the repo with files on GitHub's side, to avoid a first-push conflict). Claude Code can handle the Git setup and add a .gitignore so build artifacts stay out.  
-- Repo: [https://github.com/EgyptAmaru/what-was-the-reason.git](https://github.com/EgyptAmaru/what-was-the-reason.git)  
+- The local folder is the source of truth; push it *to* an empty GitHub repo of your own (don't initialize the repo with files on GitHub's side, to avoid a first-push conflict). Claude Code can handle the Git setup and add a .gitignore so build artifacts stay out.  
 - Include in .gitignore: PROCESS.md (exact case; .gitignore matching is case-sensitive on case-sensitive filesystems).  
 - **Presentation layer coupling (js/format.js and js/charts.js).** Question content lives in Markdown, but per-question presentation lives in JavaScript keyed to question IDs. js/charts.js holds the chart and table specs from the Build notes, plus strip patterns that remove flattened table text from question prose. js/format.js holds paragraph and bullet formatting matched to exact phrases in specific questions (for example "Reasoned backward:" or "The Castro manager"). Rewording or re-theming a question breaks these rules silently: format rules fall back to plain single-block rendering with no error, and a changed question in Logic R5 or R6 would leave the flattened table text visible on the card. This partly breaks the re-theme-by-editing-Markdown-only principle; a re-theme must also review charts.js and format.js.
 

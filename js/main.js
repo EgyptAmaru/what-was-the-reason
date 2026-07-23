@@ -1,7 +1,7 @@
 /* Boot and orchestration: screen transitions, the timed choreography after a
    card closes (retire fade, point glide, band advance, game end), the
    locked-band override, and restart. Timing per CLAUDE.md "Board State":
-     - initial band activation: 3s after landing on the board
+     - initial band activation: 1.5s after landing on the board
      - retire fade: 1s after the card closes (only if the answer was revealed)
      - point bar/text glide: 1.5s after the card closes
      - next band activation: after the retire fade has signaled (2s)
@@ -89,7 +89,7 @@ window.Main = (function () {
     document.getElementById('override-toggle').checked = State.data.override;
     showScreen('board-screen');
     // Board renders all-gray first; bands fade to color after the delay.
-    setTimeout(function () { Board.sync(); }, freshGame ? 3000 : 400);
+    setTimeout(function () { Board.sync(); }, freshGame ? 1500 : 400);
   }
 
   function restart() {
@@ -98,8 +98,31 @@ window.Main = (function () {
     location.reload();
   }
 
+  /* ---------- dark mode ----------
+     A display preference, not game state: it lives under its own key so
+     "Restart game" (which clears game state) leaves it alone. */
+
+  var DARK_KEY = 'wwtr-dark-v1';
+
+  function applyDark(on) {
+    document.body.classList.toggle('dark', on);
+  }
+
+  function initDarkMode() {
+    var on = false;
+    try { on = localStorage.getItem(DARK_KEY) === '1'; } catch (e) { /* default light */ }
+    applyDark(on);
+    var toggle = document.getElementById('dark-toggle');
+    toggle.checked = on;
+    toggle.addEventListener('change', function (e) {
+      applyDark(e.target.checked);
+      try { localStorage.setItem(DARK_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* ignore */ }
+    });
+  }
+
   function init() {
     Card.init();
+    initDarkMode();
 
     document.getElementById('team-form').addEventListener('submit', function (e) {
       e.preventDefault();
