@@ -24,7 +24,6 @@ window.Host = (function () {
   var snap = null;        // latest state snapshot from the TV
   var mode = null;        // 'live' | 'browse'
   var previewQid = null;  // locally viewed question (does not touch the TV)
-  var previewOn = false;  // grid taps preview locally instead of opening on TV
   var lastRendered = '';
 
   // Which detail sections the host has open; survives re-renders so an
@@ -208,8 +207,14 @@ window.Host = (function () {
     var h = '';
 
     if (opts.preview) {
+      // Tapping a square always lands here, privately. Sending the question
+      // to the shared screen is the deliberate, explicit action.
+      var canOpen = mode === 'live' && tileState(qid, info.row) !== 'locked';
       h += '<div class="preview-bar"><button type="button" class="back" data-act="back">&larr; Back</button>' +
-        '<span>Preview · not shown on the TV</span></div>';
+        (canOpen
+          ? '<button type="button" class="open-tv" data-act="open-tv">Open on TV</button>'
+          : '<span>Preview · not shown on the TV</span>') +
+        '</div>';
     }
 
     h += '<div class="qmeta">' +
@@ -251,14 +256,8 @@ window.Host = (function () {
   function gridHtml() {
     var live = mode === 'live';
     var cols = D.columns.slice().sort(function (a, b) { return a.position - b.position; });
-    var h = '<div class="grid-head"><span class="grid-title">' +
-      (live ? 'Tap a square to open it on the TV' : 'Tap a square to read its notes') + '</span>';
-    if (live) {
-      h += '<button type="button" class="preview-toggle' + (previewOn ? ' on' : '') + '" data-act="preview-toggle">Preview</button>';
-    }
-    h += '</div>';
 
-    h += '<div class="col-key">' + cols.map(function (c) {
+    var h = '<div class="col-key">' + cols.map(function (c) {
       return '<span class="ck" style="--kc:' + colColor(c.id) + '">' + esc(c.name) + '</span>';
     }).join('') + '</div>';
 
@@ -275,10 +274,10 @@ window.Host = (function () {
       cols.forEach(function (c) {
         var qid = c.id + ':' + r.row;
         var state = live ? tileState(qid, r.row) : 'active';
-        var browsable = !live || previewOn || state !== 'locked';
+        // Every tile previews privately, including locked rows (peeking
+        // ahead is host material); the state classes only carry the look.
         h += '<button type="button" class="mini-tile ' + state +
-          (browsable ? ' browsable' : '') +
-          '" data-col="' + c.id + '" data-qid="' + qid + '">' + r.points + '</button>';
+          ' browsable" data-col="' + c.id + '" data-qid="' + qid + '">' + r.points + '</button>';
       });
       h += '</div>';
     });
@@ -344,8 +343,16 @@ window.Host = (function () {
     var back = e.target.closest('[data-act="back"]');
     if (back) { previewQid = null; render(); return; }
 
-    var pt = e.target.closest('[data-act="preview-toggle"]');
-    if (pt) { previewOn = !previewOn; render(); return; }
+    // The explicit send-to-shared-screen action from a preview.
+    var openTv = e.target.closest('[data-act="open-tv"]');
+    if (openTv) {
+      if (mode === 'live' && previewQid) {
+        send({ t: 'open', qid: previewQid });
+        previewQid = null;
+        render();
+      }
+      return;
+    }
 
     // Timer controls sit beside the readout in the live question view.
     var tbtn = e.target.closest('[data-act="timer"], [data-act="timer-reset"]');
@@ -358,14 +365,9 @@ window.Host = (function () {
 
     var tile = e.target.closest('.mini-tile');
     if (!tile) return;
-    var qid = tile.dataset.qid;
-    if (mode === 'browse' || previewOn) {
-      previewQid = qid;
-      render();
-    } else if (mode === 'live') {
-      var state = tileState(qid, Number(qid.split(':')[1]));
-      if (state !== 'locked') send({ t: 'open', qid: qid });
-    }
+    // Tile taps are always private previews; nothing reaches the TV here.
+    previewQid = tile.dataset.qid;
+    render();
   }
 
   function onControlsClick(e) {

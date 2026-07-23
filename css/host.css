@@ -110,22 +110,6 @@ button { font-family: inherit; color: inherit; }
 
 /* ---------- mini board grid ---------- */
 
-.grid-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
-}
-.grid-title {
-  font-size: 0.75rem; font-weight: 700; color: var(--ink-soft);
-  text-transform: uppercase; letter-spacing: 0.13em;
-}
-.preview-toggle {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: none; border: 1px solid var(--hairline); border-radius: 999px;
-  padding: 5px 12px; font-size: 0.75rem; font-weight: 700; color: var(--ink-soft);
-  cursor: pointer;
-}
-.preview-toggle.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
 .mini-act {
   display: flex; align-items: center; gap: 10px;
   margin: 16px 0 8px; color: var(--ink-soft);
@@ -241,13 +225,19 @@ button { font-family: inherit; color: inherit; }
 .hsec .hsec-body .big-a { display: block; font-weight: 800; margin-bottom: 0.5em; }
 
 .preview-bar {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 14px;
   font-size: 0.78rem; font-weight: 700; color: var(--ink-soft);
 }
 .preview-bar .back {
   background: none; border: 1px solid var(--hairline); border-radius: 999px;
   padding: 5px 14px; font-size: 0.78rem; font-weight: 700; color: var(--ink); cursor: pointer;
 }
+.preview-bar .open-tv {
+  background: var(--ink); color: var(--paper); border: none; border-radius: 999px;
+  padding: 7px 18px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+}
+.preview-bar .open-tv:active { transform: translateY(1px); }
 
 /* ---------- control bar ---------- */
 
