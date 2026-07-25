@@ -29,7 +29,7 @@ These were settled deliberately over a long design process. Changing any of them
 - Act-based mode escalation: Act 1 solo, Act 2 team discussion, Act 3 simultaneous reveal.  
 - Clear-a-band-to-slide-down progression (full clear, not threshold).  
 - Picks alternate between teams; rotate between members within a team.  
-- Picker decoupled from answerer.  
+- Picker decoupled from answerer in Acts 2 and 3 (the rotating spokesperson answers, not necessarily the picker). In Act 1 (solo), the picker is the one who answers.  
 - One spokesperson per team delivers a committed answer in Acts 2 and 3 (rotates per turn, independent of the picker). The team deliberates freely during the window; the spokesperson voices the final answer, which closes deliberation and is what gets scored. A wrong answer belongs to the team, not the speaker.  
 - Wrong answer is offered to the other team as an optional steal (Acts 1-2) or resolved by simultaneous reveal (Act 3); no point subtraction. See the mechanics detail below.  
 - Human host judges answers against a per-question range or rubric.  
