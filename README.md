@@ -95,6 +95,7 @@ Sync runs through a small Firebase Realtime Database project. Setup steps and th
 - **Players:** Two teams of roughly 3 to 4 (about 8 total).  
 - **Architecture:** Settled (columns, rows, acts, turn structure, host role, the Act 3 reveal mechanic, and the one-spokesperson-per-answer rule).  
 - **Content:** All four columns complete (24 questions), with host notes. Estimation in `content/estimation.md`; Strategy in `content/strategy.md`; Logic / Paradox in `content/logic-paradox.md`; Data Literacy in `content/data-literacy.md`. The web build is complete; the next phase is playtesting.  
-- **Host console:** Built and verified end to end. An optional second screen (`host.html`) gives the host context-aware notes and remote control of the board over Firebase sync, with a no-connection browse mode as fallback. Deployment (GitHub Pages) is the remaining step.  
+- **Host console:** Built, verified, and deployed to GitHub Pages. An optional second screen (`host.html`) gives the host context-aware notes and remote control of the board over Firebase sync, with a no-connection browse mode as fallback.  
+- **In-app rules:** The landing page has a "How to play" link that opens the full rules in an overlay, so players never need this README to learn the game.  
 - **Deferred to a later version:** solo-answer wager (a scoring multiplier for going alone), formal partial-credit scoring, and a confidence-wager finale (teams secretly bet points on their own accuracy for Row 6). All three were kept out of v1 to keep the rules teachable in about two minutes. See CLAUDE.md for the full v1 scope, open levers (like the points curve), and parked question ideas.
 

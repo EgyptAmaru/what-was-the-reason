@@ -127,7 +127,7 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 
 **Rendering visual questions.** Some questions need charts or tables built to the exact values in their **Build note** — treat it as spec. The distortion in a chart (a truncated axis, a wild variance) is the point; build it misleading as specified, don't "fix" it to look normal. Distortion questions show the deceptive chart on the question side and the corrected one on the answer side. Tables render as tables, structure preserved.
 
-**Landing Page:** 2 centered text input boxes labeled “Team \#1 Name” and “Team \#2 Name”. A button under these fields labeled “Start Game”. When clicked the page transitions smoothly into the view of the full board.
+**Landing Page:** 2 centered text input boxes labeled “Team \#1 Name” and “Team \#2 Name”. A button under these fields labeled “Start Game”. When clicked the page transitions smoothly into the view of the full board. Below the button, a “How to play” link opens a scrollable overlay with the full rules (setup, the board, the three acts, taking turns, wrong answers, scoring), so players never need the README to learn the game; the overlay closes via its “x”, a click on the backdrop, or Escape. The landing page also carries the dark-mode toggle (top right) and, when host sync is configured, the host-console pairing chip.
 
 **The Board**: 
 

@@ -124,9 +124,26 @@ window.Main = (function () {
     });
   }
 
+  /* ---------- how-to-play overlay ---------- */
+
+  function initRules() {
+    var overlay = document.getElementById('rules-overlay');
+    var open = document.getElementById('rules-link');
+    var close = document.getElementById('rules-close');
+    open.addEventListener('click', function () { overlay.classList.add('show'); });
+    close.addEventListener('click', function () { overlay.classList.remove('show'); });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') overlay.classList.remove('show');
+    });
+  }
+
   function init() {
     Card.init();
     initDarkMode();
+    initRules();
 
     document.getElementById('team-form').addEventListener('submit', function (e) {
       e.preventDefault();
