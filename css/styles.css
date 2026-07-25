@@ -273,6 +273,11 @@ button { font-family: inherit; color: inherit; }
   padding: 20px 30px 22px;
 }
 .face.back { transform: rotateY(180deg); }
+/* The hidden face must not intercept input: iOS still routes touches to
+   backface-hidden elements, and the back face sits later in DOM order, so
+   long question sides were unscrollable while answer sides scrolled fine. */
+.flip-inner:not(.flipped) .face.back { pointer-events: none; }
+.flip-inner.flipped .face.front { pointer-events: none; }
 .face[data-col="estimation"] { border-top-color: var(--est); }
 .face[data-col="logic-paradox"] { border-top-color: var(--logic); }
 .face[data-col="strategy"] { border-top-color: var(--strat); }

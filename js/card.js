@@ -142,7 +142,7 @@ window.Card = (function () {
 
     var qRaw = window.Charts ? Charts.cleanQuestion(info.colId, info.row, info.q.question) : info.q.question;
     var qEl = document.getElementById('q-text');
-    qEl.className = 'qtext' + lengthClass(qRaw, 380, 750);
+    qEl.className = 'qtext' + lengthClass(qRaw, 340, 750);
     qEl.innerHTML = (window.Format && Format.question(id, qRaw)) || rich(qRaw);
     document.getElementById('q-visual').innerHTML =
       (window.Charts && Charts.visual(info.colId, info.row, 'question')) || '';
