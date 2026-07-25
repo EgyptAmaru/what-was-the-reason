@@ -426,6 +426,7 @@ button { font-family: inherit; color: inherit; }
 /* ---------- rules overlay (How to play, from the landing page) ---------- */
 
 .rules-link { margin-top: 24px; }
+.board-foot .rules-open { margin-right: 22px; }
 .rules-overlay {
   position: fixed; inset: 0; z-index: 40;
   background: rgba(51, 48, 43, 0.45);
@@ -446,7 +447,6 @@ button { font-family: inherit; color: inherit; }
 }
 .rules-pop .close-x { position: absolute; top: 18px; right: 18px; }
 .rules-body { overflow-y: auto; font-size: 0.95rem; line-height: 1.65; padding-right: 6px; }
-.rules-body .rules-lede { color: var(--ink-soft); }
 .rules-body p { margin-bottom: 0.85em; }
 .rules-body p:last-child { margin-bottom: 0; }
 .rules-body ul { margin: 0 0 0.85em 1.3em; }

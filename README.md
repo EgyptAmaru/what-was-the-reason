@@ -23,7 +23,7 @@ The design choices below are not neutral. Each one is chosen because it serves o
 
 - **Act 1 (rows 1 to 2):** solo answers, generous time, no penalty. A safe warm-up where being wrong costs nothing and everyone gets a rep.   
     
-  Teams alternate. Team A answers; if wrong, team B is *offered* the question (any B member may take it). If B attempts and misses, or B declines, the answer is revealed, no points, question retired. Then B's turn.
+  Teams alternate, and the player who picked answers solo. If wrong, team B is *offered* the question, and a volunteer from team B may take it (no one is assigned, the team decides who goes). If B attempts and misses, or B declines, the answer is revealed, no points, question retired. Then B's turn.
 
 - **Act 2 (rows 3 to 4):** team discussion opens. This is where the bonding lives, because thinking out loud together is what turns a solo test into a shared puzzle.
 
@@ -33,7 +33,7 @@ The design choices below are not neutral. Each one is chosen because it serves o
 
   When both teams answer well, they both earn the points. However, if one team shows the math and the other one doesn’t, the former takes the points. 
 
-**Turns.** Picks for acts 1 and 2 alternate between teams. Within a team, the pick rotates between members.
+**Turns.** Picks for acts 1 and 2 alternate between teams. Within a team, the pick rotates between members. In Act 1 the person who picks answers solo; in acts 2 and 3 the picker only picks, and a rotating spokesperson delivers the team's answer (see One voice per answer).
 
 **Calculators.** Players can use calculators to do math, but nothing else. 
 

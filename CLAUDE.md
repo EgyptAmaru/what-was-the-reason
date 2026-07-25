@@ -42,7 +42,7 @@ These were settled deliberately over a long design process. Changing any of them
 *Act 1 & 2*
 
 - **Turns alternate**. The picking team answers first.  
-- **A wrong answer is offered to the other team (an optional steal).** If the picking team misses, the other team may attempt that question or decline. The steal is a bonus attempt appended to the picking team's turn.  
+- **A wrong answer is offered to the other team (an optional steal).** If the picking team misses, the other team may attempt that question or decline. The steal is a bonus attempt appended to the picking team's turn. In Act 1, since play is solo, a volunteer from the other team takes the steal (no one is assigned; the team decides who goes); in Act 2 the team's spokesperson answers as usual.  
 - **A passed question always resolves in that same beat.** The other team either answers it correctly (they score) or misses/declines, in which case the host reveals the answer and the question is retired with no points to anyone.
 
 *Act 2 only*
