@@ -15,7 +15,7 @@ The design choices below are not neutral. Each one is chosen because it serves o
 
 ## How to play
 
-**Setup.** Two teams of roughly 3 to 4 players each (about 8 people total). One host/moderator who runs the board and judges answers against per-question criteria.
+**Setup.** Two teams of roughly 3 to 4 players each (about 8 people total). This is the recommended size, not a requirement: the game scales, so play with more or fewer per team and it runs the same. One host/moderator runs the board and judges answers against per-question criteria.
 
 **The board.** A grid: four columns and six rows. Each **column** is a mode of reasoning (see Architecture). Each **row** is a difficulty level, worth more points as you go down. A tile is a single question, chosen by its column (what kind of thinking) and its row (how hard).
 
@@ -41,7 +41,9 @@ The design choices below are not neutral. Each one is chosen because it serves o
 
 **Wrong answers.** A wrong answer passes the question to the other team. It does not subtract points. 
 
-**The host.** Because a human judges answers against a defined range or rubric, questions do not need a single machine-checkable answer.
+**The host.** Because a human judges answers against a defined range or rubric, questions do not need a single machine-checkable answer. The host's larger job is the room: keep it constructive, read each answer generously, and frame the hard questions so a wrong guess feels expected. Setting the surprise up in advance ("your brain is supposed to get this one wrong") is what makes a reveal land as "we all fell for it" instead of "you got it wrong," which is the whole anti-fear intent in practice.
+
+**The host console (optional).** The host can open the game on a second device (a phone) alongside the main screen. It privately shows the host the hints, notes, and answer for whatever question is currently open, and can control the board remotely: open a question, flip to the answer, pick winners, and run the timer. It is entirely optional. The game plays fully from the main screen alone, with the host reading notes from a printout or the content files instead. To pair, tap "Host console" on the main screen and scan the code with the phone. Setup for the sync it relies on is in the Host console section below.
 
 **Scoring.** A team either satisfies a question's criteria or it does not. A team wins when its reasoning holds, even without the underlying math (where possible), so the game stays welcoming to people who would rather reason than calculate. 
 

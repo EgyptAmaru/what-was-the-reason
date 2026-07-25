@@ -450,6 +450,13 @@ button { font-family: inherit; color: inherit; }
 .rules-body p:last-child { margin-bottom: 0; }
 .rules-body ul { margin: 0 0 0.85em 1.3em; }
 .rules-body li { margin-bottom: 0.5em; }
+.rules-body h3 {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 1.5em 0 0.7em;
+  display: flex; align-items: center; gap: 12px;
+}
+.rules-body h3::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
 
 /* ---------- host console chip + pairing overlay (sync.js injects these) ---------- */
 
