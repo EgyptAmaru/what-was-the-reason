@@ -244,6 +244,12 @@ button { font-family: inherit; color: inherit; }
 /* ---------- expanded card ---------- */
 
 #card-screen { align-items: center; justify-content: center; padding: 3vh 16px; }
+/* The screen behind an open card floods with the column's color (both
+   themes); the card itself keeps its neutral theme tone for legibility. */
+#card-screen[data-col="estimation"] { background: var(--est); }
+#card-screen[data-col="logic-paradox"] { background: var(--logic); }
+#card-screen[data-col="strategy"] { background: var(--strat); }
+#card-screen[data-col="data-literacy"] { background: var(--data); }
 .flip-wrap {
   perspective: 1800px;
   width: min(720px, 94vw);
@@ -365,6 +371,12 @@ button { font-family: inherit; color: inherit; }
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .answer-btn:hover { transform: translateY(-2px); box-shadow: var(--lift); }
+/* Flip button takes the column color; its label knocks out to the card
+   tone, so it tracks light vs dark mode like the tile labels do. */
+.face[data-col="estimation"] .answer-btn { background: var(--est); color: var(--card); }
+.face[data-col="logic-paradox"] .answer-btn { background: var(--logic); color: var(--card); }
+.face[data-col="strategy"] .answer-btn { background: var(--strat); color: var(--card); }
+.face[data-col="data-literacy"] .answer-btn { background: var(--data); color: var(--card); }
 
 /* ---------- end screen ---------- */
 

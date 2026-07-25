@@ -165,7 +165,7 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 3. **Strategy**: Label: “Strategy”**;** Subheader: “reason about other minds”; Color of squares: \#6b9e78  
 4. **Data Literacy:** Label: “Data Literacy”; Subheader: “interrogate a claim”; Color of squares: \#b87070
 
-**Board Squares:** When tapped/clicked, it expands into a centered card and the board disappears.The question language then appears. 
+**Board Squares:** When tapped/clicked, it expands into a centered card and the board disappears.The question language then appears. The screen behind the expanded card floods with the column's color, in both light and dark mode, while the card itself keeps its neutral theme tone; the Answer/Question flip button also takes the column color, with its label knocked out to the card tone. 
 
 - **Closing a Square**: In the upper left: an “x” to return to collapse the square and return to the board.   
 - **Awarding Points:** In the lower left: An section with a “Winner” header and options to select team A and/or team B. The selection is three-way: one team (that team scores), both teams (both score the points), or neither. If neither is selected and the answer was revealed, the question still retires on close with no points awarded.  

@@ -137,6 +137,8 @@ window.Card = (function () {
     document.querySelectorAll('#card-screen .face').forEach(function (face) {
       face.dataset.col = info.colId;
     });
+    // Flood the screen behind the card with the column color.
+    document.getElementById('card-screen').dataset.col = info.colId;
 
     var qRaw = window.Charts ? Charts.cleanQuestion(info.colId, info.row, info.q.question) : info.q.question;
     var qEl = document.getElementById('q-text');
