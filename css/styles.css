@@ -446,6 +446,7 @@ button { font-family: inherit; color: inherit; }
 }
 .rules-pop .close-x { position: absolute; top: 18px; right: 18px; }
 .rules-body { overflow-y: auto; font-size: 0.95rem; line-height: 1.65; padding-right: 6px; }
+.rules-body .rules-lede { color: var(--ink-soft); }
 .rules-body p { margin-bottom: 0.85em; }
 .rules-body p:last-child { margin-bottom: 0; }
 .rules-body ul { margin: 0 0 0.85em 1.3em; }
