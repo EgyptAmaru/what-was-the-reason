@@ -399,12 +399,27 @@ window.Host = (function () {
     return '<div class="cmsg"><div class="big">' + big + '</div>' + small + '</div>';
   }
 
+  // Start form: enter team names and start the game on the TV remotely, the
+  // same capability as the board's landing page.
+  function startFormHtml() {
+    return '<div class="hstart">' +
+      '<h2>Start a game</h2>' +
+      '<p class="hstart-sub">Enter the team names and start the game on the TV.</p>' +
+      '<label class="hstart-field red"><span>Team #1 Name</span>' +
+      '<input id="host-team1" type="text" autocomplete="off" placeholder="Enter a team name"></label>' +
+      '<label class="hstart-field blue"><span>Team #2 Name</span>' +
+      '<input id="host-team2" type="text" autocomplete="off" placeholder="Enter a team name"></label>' +
+      '<button type="button" class="hstart-btn" data-act="start-game">Start Game</button>' +
+      '<button type="button" class="hstart-rules rules-open">How to play</button>' +
+      '</div>';
+  }
+
   function bodyHtml() {
     if (mode === 'browse') {
       return previewQid ? questionHtml(previewQid, { kind: 'browse' }) : gridHtml();
     }
     if (!snap) return msg('Waiting for the board', 'Open the game on the TV. This screen joins it automatically.');
-    if (!snap.started) return msg('Waiting for team names', 'Enter the teams on the TV to begin.');
+    if (!snap.started) return startFormHtml();
     if (snap.finished) {
       var t = snap.teams, s = snap.scores || [0, 0];
       var line = s[0] === s[1] ? 'It is a tie!' :
@@ -445,6 +460,16 @@ window.Host = (function () {
   /* ---------- interaction ---------- */
 
   function onBodyClick(e) {
+    var start = e.target.closest('[data-act="start-game"]');
+    if (start) {
+      if (mode === 'live') {
+        var t1 = document.getElementById('host-team1');
+        var t2 = document.getElementById('host-team2');
+        send({ t: 'start', teams: [t1 ? t1.value : '', t2 ? t2.value : ''] });
+      }
+      return;
+    }
+
     var back = e.target.closest('[data-act="back"]');
     if (back) {
       if (mode === 'live' && !disconnected && snap && snap.open) {

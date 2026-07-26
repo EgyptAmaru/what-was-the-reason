@@ -71,6 +71,10 @@ window.Card = (function () {
           timer.remaining = 0;
           stopTimer();
           ping();
+          // Alarm only when time runs out on the Question face of an open card.
+          var onQuestion = document.getElementById('card-screen').classList.contains('active') &&
+            !document.getElementById('flip-inner').classList.contains('flipped');
+          if (onQuestion && window.Sound) Sound.timesUp();
         }
         renderTimer();
       }, 1000);

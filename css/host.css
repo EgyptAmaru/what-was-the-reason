@@ -151,6 +151,41 @@ button { font-family: inherit; color: inherit; }
 .cmsg { text-align: center; color: var(--ink-soft); padding: 60px 20px; font-size: 0.95rem; }
 .cmsg .big { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
 
+/* ---------- start form (remote game start) ---------- */
+
+.hstart {
+  max-width: 420px; margin: 24px auto 0; display: flex; flex-direction: column;
+  text-align: center; padding: 0 4px;
+}
+.hstart h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 1.6rem; }
+.hstart-sub { color: var(--ink-soft); font-size: 0.9rem; margin: 6px 0 24px; }
+.hstart-field { display: flex; flex-direction: column; gap: 7px; text-align: left; margin-bottom: 18px; }
+.hstart-field span {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.13em;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.hstart-field span::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+.hstart-field.red span { color: var(--team-red); }
+.hstart-field.red span::before { background: var(--team-red); }
+.hstart-field.blue span { color: var(--team-blue); }
+.hstart-field.blue span::before { background: var(--team-blue); }
+.hstart-field input {
+  font-family: 'Nunito Sans', sans-serif; font-size: 1.05rem; font-weight: 600;
+  color: var(--ink); padding: 13px 16px; background: var(--card);
+  border: 1px solid var(--hairline); border-radius: 12px; outline: none;
+}
+.hstart-field input:focus { border-color: var(--ink); }
+.hstart-btn {
+  margin-top: 8px; font-weight: 700; font-size: 1rem;
+  color: var(--paper); background: var(--ink);
+  border: none; border-radius: 12px; padding: 14px 44px; cursor: pointer;
+}
+.hstart-rules {
+  margin-top: 22px; background: none; border: none; cursor: pointer;
+  font-size: 0.82rem; font-weight: 600; color: var(--ink-soft);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
 /* ---------- board grid (mirrors the TV board's proportions) ---------- */
 
 .hg-controls {

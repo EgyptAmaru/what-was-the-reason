@@ -74,6 +74,12 @@ window.Sync = (function () {
       return;
     }
 
+    // Starting the game: only meaningful before it has started.
+    if (cmd.t === 'start') {
+      if (window.Main && Main.startGame) Main.startGame(cmd.teams);
+      return;
+    }
+
     if (!State.data.started || State.data.finished) return;
     var openQid = Card.current().qid;
 

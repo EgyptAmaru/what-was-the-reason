@@ -1,0 +1,42 @@
+/* Shared "How to play" overlay styles (see js/rules.js), linked by both the
+   board and the host console. Uses the design tokens both pages define, so it
+   themes correctly in either. Self-contained (its own close button) so it
+   does not depend on page-specific styles. */
+
+.rules-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center; padding: 4vh 16px;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.rules-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.25s ease; }
+.rules-pop {
+  position: relative;
+  background: var(--card); color: var(--ink); border-radius: 18px; box-shadow: var(--lift);
+  padding: 26px 30px 24px; width: min(640px, 94vw); max-height: 88vh;
+  display: flex; flex-direction: column;
+}
+.rules-pop h2 {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500;
+  font-size: 1.4rem; margin-bottom: 12px; padding-right: 44px;
+}
+.rules-close-x {
+  position: absolute; top: 18px; right: 18px;
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--hairline);
+  background: transparent; color: var(--ink-soft); font-size: 0.95rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.rules-close-x:hover { border-color: var(--ink); color: var(--ink); }
+.rules-body { overflow-y: auto; font-size: 0.95rem; line-height: 1.65; padding-right: 6px; color: var(--ink); }
+.rules-body p { margin-bottom: 0.85em; }
+.rules-body p:last-child { margin-bottom: 0; }
+.rules-body ul { margin: 0 0 0.85em 1.3em; }
+.rules-body li { margin-bottom: 0.5em; }
+.rules-body h3 {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 1.5em 0 0.7em;
+  display: flex; align-items: center; gap: 12px;
+}
+.rules-body h3::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }

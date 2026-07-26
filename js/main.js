@@ -74,6 +74,7 @@ window.Main = (function () {
       '<div class="srow blue"><span class="sname">' + escapeHtml(State.data.teams[1]) + '</span>' +
       '<span class="spts">' + s1 + ' pts</span></div>';
     showScreen('end-screen');
+    if (window.Sound) Sound.fanfare();
   }
 
   function escapeHtml(s) {
@@ -90,6 +91,19 @@ window.Main = (function () {
     showScreen('board-screen');
     // Board renders all-gray first; bands fade to color after the delay.
     setTimeout(function () { Board.sync(); }, freshGame ? 1500 : 400);
+  }
+
+  // Start the game with the given team names. Called by the local team form
+  // and by a remote 'start' command from the host console.
+  function startGame(teams) {
+    if (State.data.started) return;
+    State.data.teams = [
+      (teams && teams[0] ? String(teams[0]).trim() : '') || 'Team 1',
+      (teams && teams[1] ? String(teams[1]).trim() : '') || 'Team 2'
+    ];
+    State.data.started = true;
+    State.save();
+    startBoard(true);
   }
 
   function restart() {
@@ -139,37 +153,16 @@ window.Main = (function () {
     });
   }
 
-  /* ---------- how-to-play overlay ---------- */
-
-  function initRules() {
-    var overlay = document.getElementById('rules-overlay');
-    var close = document.getElementById('rules-close');
-    // Openable from the landing page and the board (for mid-game disputes).
-    document.querySelectorAll('.rules-open').forEach(function (btn) {
-      btn.addEventListener('click', function () { overlay.classList.add('show'); });
-    });
-    close.addEventListener('click', function () { overlay.classList.remove('show'); });
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) overlay.classList.remove('show');
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') overlay.classList.remove('show');
-    });
-  }
-
   function init() {
     Card.init();
     initDarkMode();
-    initRules();
 
     document.getElementById('team-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      var t1 = document.getElementById('team1').value.trim() || 'Team 1';
-      var t2 = document.getElementById('team2').value.trim() || 'Team 2';
-      State.data.teams = [t1, t2];
-      State.data.started = true;
-      State.save();
-      startBoard(true);
+      startGame([
+        document.getElementById('team1').value,
+        document.getElementById('team2').value
+      ]);
     });
 
     document.getElementById('override-toggle').addEventListener('change', function (e) {
@@ -198,6 +191,7 @@ window.Main = (function () {
     showScreen: showScreen,
     afterClose: afterClose,
     setDark: setDark,
-    setOverride: setOverride
+    setOverride: setOverride,
+    startGame: startGame
   };
 })();
