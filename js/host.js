@@ -352,7 +352,6 @@ window.Host = (function () {
     h += '<div class="hg-corner"></div>';
     cols.forEach(function (c) {
       h += '<div class="hg-colhead"><div class="hg-cname">' + esc(c.name) + '</div>' +
-        '<div class="hg-csub">' + esc(c.subheader) + '</div>' +
         '<div class="hg-cbar" style="background:' + colColor(c.id) + '"></div></div>';
     });
     D.rows.forEach(function (r) {

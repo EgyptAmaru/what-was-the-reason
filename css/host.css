@@ -97,8 +97,8 @@ button { font-family: inherit; color: inherit; }
 
 .chead {
   position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px 18px; flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: flex-start;
+  gap: 10px 22px; flex-wrap: wrap;
   padding: 10px clamp(16px, 3vw, 32px); background: var(--card);
   border-bottom: 1px solid var(--hairline);
 }
@@ -117,7 +117,7 @@ button { font-family: inherit; color: inherit; }
 }
 .conn-dot { width: 9px; height: 9px; border-radius: 50%; background: #BDB5A8; }
 .conn-dot.on { background: var(--strat); }
-.c-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; justify-content: flex-end; }
+.c-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; justify-content: flex-start; }
 .c-toggle {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
   font-size: 0.8rem; font-weight: 600; color: var(--ink-soft);
@@ -214,7 +214,6 @@ button { font-family: inherit; color: inherit; }
   font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500;
   font-size: clamp(0.72rem, 1.5vw, 1rem); line-height: 1.15;
 }
-.hg-csub { font-size: clamp(0.55rem, 1vw, 0.7rem); color: var(--ink-soft); font-style: italic; margin-top: 2px; line-height: 1.15; }
 .hg-cbar { width: 26px; height: 3px; border-radius: 999px; margin: 6px auto 0; }
 .hg-act {
   grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
