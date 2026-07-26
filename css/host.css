@@ -117,8 +117,7 @@ button { font-family: inherit; color: inherit; }
 }
 .conn-dot { width: 9px; height: 9px; border-radius: 50%; background: #BDB5A8; }
 .conn-dot.on { background: var(--strat); }
-.c-actions { display: flex; align-items: center; gap: 14px 18px; flex-wrap: wrap; }
-.c-toggles { display: flex; align-items: center; gap: 16px; }
+.c-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; justify-content: flex-end; }
 .c-toggle {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
   font-size: 0.8rem; font-weight: 600; color: var(--ink-soft);
@@ -137,14 +136,29 @@ button { font-family: inherit; color: inherit; }
 .c-toggle input:checked + .c-switch { background: var(--ink); }
 .c-toggle input:checked + .c-switch::after { left: 14px; }
 .c-toggle input:focus-visible + .c-switch { outline: 2px solid var(--ink); outline-offset: 2px; }
-.c-scores { display: flex; gap: 14px; font-size: 0.82rem; font-weight: 700; }
-.c-scores .cs { display: inline-flex; align-items: center; gap: 6px; }
-.c-scores .cs::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
-.c-scores .cs.red::before { background: var(--team-red); }
-.c-scores .cs.blue::before { background: var(--team-blue); }
-.c-scores .cs .n { font-variant-numeric: tabular-nums; }
 
 .cbody { padding: 20px clamp(16px, 3vw, 32px) 120px; max-width: 1040px; margin: 0 auto; width: 100%; }
+
+/* Team point totals on the board view (mirrors the player board's corners). */
+.hg-scores {
+  display: flex; justify-content: space-between; gap: 20px;
+  max-width: 1000px; margin: 0 auto 18px;
+}
+.hs-team { min-width: 0; flex: 1 1 40%; }
+.hs-team.blue { text-align: right; }
+.hs-team .hs-top { display: flex; align-items: baseline; gap: 10px; }
+.hs-team.blue .hs-top { justify-content: flex-end; }
+.hs-team .hs-name { font-size: 0.9rem; font-weight: 700; }
+.hs-team .hs-pts {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+.hs-team.red .hs-name, .hs-team.red .hs-pts { color: var(--team-red); }
+.hs-team.blue .hs-name, .hs-team.blue .hs-pts { color: var(--team-blue); }
+.hs-team .hs-track { height: 8px; border-radius: 999px; background: rgba(115, 108, 96, 0.2); overflow: hidden; margin-top: 6px; }
+.hs-team .hs-fill { height: 100%; border-radius: 999px; transition: width 0.6s cubic-bezier(0.3, 0, 0.2, 1); }
+.hs-team.red .hs-fill { background: var(--team-red); }
+.hs-team.blue .hs-fill { background: var(--team-blue); }
 
 /* ---------- waiting / message ---------- */
 
@@ -187,12 +201,6 @@ button { font-family: inherit; color: inherit; }
 }
 
 /* ---------- board grid (mirrors the TV board's proportions) ---------- */
-
-.hg-controls {
-  display: flex; justify-content: flex-end; align-items: center;
-  flex-wrap: wrap; gap: 12px 22px;
-  max-width: 1000px; margin: 0 auto 16px;
-}
 
 .hgrid {
   display: grid;

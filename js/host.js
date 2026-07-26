@@ -16,6 +16,11 @@ window.Host = (function () {
   'use strict';
 
   var D = window.GAME_DATA;
+  // A score bar is full at half the board's total points, matching the player
+  // board (see js/score.js).
+  var FULL_BAR = D.rows.reduce(function (sum, r) {
+    return sum + r.points * D.columns.length;
+  }, 0) / 2;
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var LAST_ROOM_KEY = 'wwtr-host-room-v1';
   var HOST_DARK_KEY = 'wwtr-host-dark-v1';
@@ -187,20 +192,31 @@ window.Host = (function () {
   function renderHeader() {
     el('room-label').textContent = mode === 'live' ? ('Room ' + roomCode) : 'Browsing';
 
-    // Dark mode lives in the header so it is reachable from any view; the
-    // board-control toggles (unlock, disconnect) live on the board view.
-    el('c-toggles').innerHTML = toggleControl('t-dark', 'Dark mode', consoleDark(), false);
-
-    var scores = el('c-scores');
-    if (mode === 'live' && snap && snap.started) {
-      var t = snap.teams || ['Team 1', 'Team 2'];
-      var s = snap.scores || [0, 0];
-      scores.innerHTML =
-        '<span class="cs red">' + esc(t[0]) + ' <span class="n">' + s[0] + '</span></span>' +
-        '<span class="cs blue">' + esc(t[1]) + ' <span class="n">' + s[1] + '</span></span>';
-    } else {
-      scores.innerHTML = '';
+    // All session toggles are grouped in the header. Dark mode is always
+    // available; unlock and disconnect only mean something when connected.
+    var toggles = '';
+    if (mode === 'live') {
+      toggles += toggleControl('t-disconnect', 'Disconnect from players', disconnected, false);
+      toggles += toggleControl('t-override', 'Unlock all acts', viewUnlocked(), false);
     }
+    toggles += toggleControl('t-dark', 'Dark mode', consoleDark(), false);
+    el('c-toggles').innerHTML = toggles;
+  }
+
+  // Team point totals, shown on the board view (as on the player board), not
+  // on the card, so a point change is seen only after the card is closed.
+  function scoresHtml() {
+    if (!(mode === 'live' && snap && snap.started)) return '';
+    var t = snap.teams || ['Team 1', 'Team 2'];
+    var s = snap.scores || [0, 0];
+    function side(i, cls) {
+      var w = Math.min(100, (s[i] / FULL_BAR) * 100);
+      return '<div class="hs-team ' + cls + '">' +
+        '<div class="hs-top"><span class="hs-name">' + esc(t[i]) + '</span>' +
+        '<span class="hs-pts">' + s[i] + '</span></div>' +
+        '<div class="hs-track"><div class="hs-fill" style="width:' + w + '%"></div></div></div>';
+    }
+    return '<div class="hg-scores">' + side(0, 'red') + side(1, 'blue') + '</div>';
   }
 
   // Fields are folded into the three source sections of the content schema
@@ -263,12 +279,8 @@ window.Host = (function () {
 
     h += '<div class="qmeta">' +
       '<span class="col-chip" style="--dot:' + colColor(info.colId) + '">' + esc(info.col.name) + '</span>' +
-      '<span class="rowpts">R' + info.row + '</span>';
-    if (kind === 'live' && snap && snap.open) {
-      h += '<span class="facetag' + (snap.open.face === 'answer' ? ' answer' : '') + '">TV: ' +
-        (snap.open.face === 'answer' ? 'Answer' : 'Question') + '</span>';
-    }
-    h += '</div>';
+      '<span class="rowpts">R' + info.row + '</span>' +
+      '</div>';
 
     if (q.title) h += '<div class="qtitle">' + esc(q.title) + '</div>';
 
@@ -334,13 +346,7 @@ window.Host = (function () {
     var cols = D.columns.slice().sort(function (a, b) { return a.position - b.position; });
     var activeBand = activeBandIndex();
 
-    var h = '';
-    if (mode === 'live') {
-      h += '<div class="hg-controls">' +
-        toggleControl('t-disconnect', 'Disconnect from players', disconnected, false) +
-        toggleControl('t-override', 'Unlock all acts', viewUnlocked(), false) +
-        '</div>';
-    }
+    var h = scoresHtml();
 
     h += '<div class="hgrid">';
     h += '<div class="hg-corner"></div>';
@@ -507,17 +513,6 @@ window.Host = (function () {
     }
   }
 
-  function onBodyChange(e) {
-    var inp = e.target.closest('input[data-act]');
-    if (!inp) return;
-    if (inp.dataset.act === 't-disconnect') {
-      setDisconnected(inp.checked);
-    } else if (inp.dataset.act === 't-override') {
-      if (disconnected) { localUnlock = inp.checked; render(); }
-      else if (mode === 'live') { send({ t: 'override', value: inp.checked }); }
-    }
-  }
-
   function setDisconnected(on) {
     disconnected = on;
     previewQid = null;
@@ -590,19 +585,22 @@ window.Host = (function () {
     });
   }
 
+  // All three session toggles live in the header now.
   function onHeaderChange(e) {
     var inp = e.target.closest('input[data-act]');
     if (!inp) return;
     if (inp.dataset.act === 't-dark') {
       toggleDark(inp.checked);
-    } else if (inp.dataset.act === 't-override' && mode === 'live') {
-      send({ t: 'override', value: inp.checked });
+    } else if (inp.dataset.act === 't-disconnect') {
+      setDisconnected(inp.checked);
+    } else if (inp.dataset.act === 't-override') {
+      if (disconnected) { localUnlock = inp.checked; render(); }
+      else if (mode === 'live') { send({ t: 'override', value: inp.checked }); }
     }
   }
 
   function init() {
     el('cbody').addEventListener('click', onBodyClick);
-    el('cbody').addEventListener('change', onBodyChange);
     el('controls').addEventListener('click', onControlsClick);
     el('chead').addEventListener('change', onHeaderChange);
     el('browse-btn').addEventListener('click', startBrowse);
