@@ -18,6 +18,7 @@ window.Host = (function () {
   var D = window.GAME_DATA;
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var LAST_ROOM_KEY = 'wwtr-host-room-v1';
+  var HOST_DARK_KEY = 'wwtr-host-dark-v1';
 
   var fb = null;          // { db, ref, push, onValue }
   var roomCode = null;
@@ -26,9 +27,14 @@ window.Host = (function () {
   var previewQid = null;  // locally viewed question (does not touch the TV)
   var lastRendered = '';
 
-  // Which detail sections the host has open; survives re-renders so an
-  // incoming snapshot does not fold the section they are reading.
-  var openSecs = { hints: true };
+  // Which detail groups the host has expanded; survives re-renders so an
+  // incoming snapshot does not fold the group they are reading. The
+  // question and answer live under Board content, so it opens by default.
+  var openGroups = { board: true, scoring: false, host: true };
+
+  // Console's own dark preference, used when browsing (no TV to mirror).
+  var localDark = false;
+  try { localDark = localStorage.getItem(HOST_DARK_KEY) === '1'; } catch (e) { /* default light */ }
 
   /* ---------- text helpers ---------- */
 
@@ -164,8 +170,23 @@ window.Host = (function () {
 
   function el(id) { return document.getElementById(id); }
 
+  function toggleControl(act, label, on, disabled) {
+    return '<label class="c-toggle' + (disabled ? ' disabled' : '') + '">' +
+      '<input type="checkbox" data-act="' + act + '"' + (on ? ' checked' : '') +
+      (disabled ? ' disabled' : '') + '>' +
+      '<span class="c-switch" aria-hidden="true"></span>' + label + '</label>';
+  }
+
   function renderHeader() {
     el('room-label').textContent = mode === 'live' ? ('Room ' + roomCode) : 'Browsing';
+
+    // Remote toggles: dark mode always, unlock-acts only when connected.
+    var toggles = toggleControl('t-dark', 'Dark', consoleDark(), false);
+    if (mode === 'live') {
+      toggles += toggleControl('t-override', 'Unlock acts', !!(snap && snap.override), !snap);
+    }
+    el('c-toggles').innerHTML = toggles;
+
     var scores = el('c-scores');
     if (mode === 'live' && snap && snap.started) {
       var t = snap.teams || ['Team 1', 'Team 2'];
@@ -178,21 +199,43 @@ window.Host = (function () {
     }
   }
 
-  // Sections are tagged by which source section of the content schema they
-  // come from (Board Content / Scoring / Host Notes), so the host can see at
-  // a glance what kind of material each is. Documentation fields (why it's
+  // Fields are folded into the three source sections of the content schema
+  // (Board content / Scoring / Host notes), one collapsible group each, the
+  // same grouping the Markdown files use. Documentation fields (why it's
   // this level, build/reskin/other notes) never render in the game.
-  var GROUPS = {
-    board: { label: 'Board content', cls: 'hsec--board' },
-    scoring: { label: 'Scoring', cls: 'hsec--scoring' },
-    host: { label: 'Host notes', cls: 'hsec--host' }
-  };
+  function fieldHtml(key, label, body) {
+    return '<div class="hfield" data-field="' + key + '">' +
+      '<div class="hlabel">' + label + '</div>' + body + '</div>';
+  }
 
-  function sectionHtml(key, label, body, group) {
-    var g = GROUPS[group];
-    return '<details class="hsec ' + g.cls + '" data-sec="' + key + '"' + (openSecs[key] ? ' open' : '') + '>' +
-      '<summary>' + label + '<span class="sec-tag">' + g.label + '</span></summary>' +
-      '<div class="hsec-body">' + body + '</div></details>';
+  function groupHtml(key, label, cls, inner) {
+    return '<details class="hgroup ' + cls + '" data-group="' + key + '"' +
+      (openGroups[key] ? ' open' : '') + '>' +
+      '<summary>' + label + '</summary>' +
+      '<div class="hgroup-body">' + inner + '</div></details>';
+  }
+
+  /* ---------- console dark mode ----------
+     Live: mirror the TV (snapshot.dark), toggling sends a command back.
+     Browse: the console themes itself from a local preference. */
+
+  function consoleDark() {
+    if (mode === 'live' && snap && typeof snap.dark === 'boolean') return snap.dark;
+    return localDark;
+  }
+
+  function applyConsoleDark() {
+    document.body.classList.toggle('dark', consoleDark());
+  }
+
+  function toggleDark(on) {
+    if (mode === 'live') {
+      send({ t: 'dark', value: on });
+    } else {
+      localDark = on;
+      try { localStorage.setItem(HOST_DARK_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+    }
+    document.body.classList.toggle('dark', on); // optimistic; render reconciles
   }
 
   function questionHtml(qid, opts) {
@@ -204,7 +247,7 @@ window.Host = (function () {
     var aVis = (window.Charts && Charts.visual(info.colId, info.row, 'answer')) || '';
     var aBody = ((window.Format && Format.answer(qid, q.answer)) || answerHtml(q.answer)) + aVis;
 
-    var h = '';
+    var h = '<div class="qdetail">';
 
     if (opts.preview) {
       // Tapping a square always lands here, privately. Sending the question
@@ -241,35 +284,51 @@ window.Host = (function () {
       }
     }
 
-    h += '<div class="qcard"><div class="qtext">' + qBody + '</div>' + qVis + '</div>';
+    // Board content: the question (as it reads on the TV) and the answer.
+    var boardInner =
+      fieldHtml('question', 'Question', '<div class="qcard"><div class="qtext">' + qBody + '</div>' + qVis + '</div>') +
+      fieldHtml('answer', 'Answer', '<div class="afield">' + aBody + '</div>');
+    h += groupHtml('board', 'Board content', 'hgroup--board', boardInner);
 
-    h += sectionHtml('hints', 'Hints', hintsHtml(q.hints), 'host');
-    if (q.hostNote) h += sectionHtml('hostNote', 'Host note', paras(q.hostNote), 'host');
-    if (q.takeaway) h += sectionHtml('takeaway', 'Takeaway', paras(q.takeaway), 'host');
-    h += sectionHtml('answer', 'Answer', aBody, 'board');
-    h += sectionHtml('gate', 'What earns the points', paras(q.scoringGate), 'scoring');
-    h += sectionHtml('path', 'How they might get there', paras(q.path), 'scoring');
+    // Scoring.
+    var scoringInner =
+      fieldHtml('gate', 'What earns the points', paras(q.scoringGate)) +
+      fieldHtml('path', 'How they might get there', paras(q.path));
+    h += groupHtml('scoring', 'Scoring', 'hgroup--scoring', scoringInner);
 
+    // Host notes.
+    var hostInner = fieldHtml('hints', 'Hints', hintsHtml(q.hints));
+    if (q.hostNote) hostInner += fieldHtml('hostNote', 'Host note', paras(q.hostNote));
+    if (q.takeaway) hostInner += fieldHtml('takeaway', 'Takeaway', paras(q.takeaway));
+    h += groupHtml('host', 'Host notes', 'hgroup--host', hostInner);
+
+    h += '</div>';
     return h;
   }
 
+  // A single grid that mirrors the TV board's proportions (row-label column
+  // plus four equal columns, column headers, act bands), so it reads the
+  // same on a phone or a desktop rather than a squished phone column.
   function gridHtml() {
     var live = mode === 'live';
     var cols = D.columns.slice().sort(function (a, b) { return a.position - b.position; });
-
-    var h = '<div class="col-key">' + cols.map(function (c) {
-      return '<span class="ck" style="--kc:' + colColor(c.id) + '">' + esc(c.name) + '</span>';
-    }).join('') + '</div>';
-
     var activeBand = activeBandIndex();
+
+    var h = '<div class="hgrid">';
+    h += '<div class="hg-corner"></div>';
+    cols.forEach(function (c) {
+      h += '<div class="hg-colhead"><div class="hg-cname">' + esc(c.name) + '</div>' +
+        '<div class="hg-csub">' + esc(c.subheader) + '</div>' +
+        '<div class="hg-cbar" style="background:' + colColor(c.id) + '"></div></div>';
+    });
     D.rows.forEach(function (r) {
       var band = rowBand(r.row);
       if (bands[band][0] === r.row) {
         var locked = live && !(snap && snap.override) && band !== activeBand;
-        h += '<div class="mini-act' + (locked ? ' locked' : '') + '"><div class="rule"></div>' +
-          esc(D.acts[band].label) + '<div class="rule"></div></div>';
+        h += '<div class="hg-act' + (locked ? ' locked' : '') + '"><span class="rule"></span>' +
+          esc(D.acts[band].label) + '<span class="rule"></span></div>';
       }
-      h += '<div class="mini-row"><div class="mini-rlabel"><span class="r">R' + r.row +
+      h += '<div class="hg-rlabel"><span class="r">R' + r.row +
         '</span><span class="rp">' + r.points + ' pts</span></div>';
       cols.forEach(function (c) {
         var qid = c.id + ':' + r.row;
@@ -279,8 +338,8 @@ window.Host = (function () {
         h += '<button type="button" class="mini-tile ' + state +
           ' browsable" data-col="' + c.id + '" data-qid="' + qid + '">' + r.points + '</button>';
       });
-      h += '</div>';
     });
+    h += '</div>';
     return h;
   }
 
@@ -319,10 +378,11 @@ window.Host = (function () {
   }
 
   function render() {
+    applyConsoleDark();
     renderHeader();
     var body = bodyHtml();
     var controls = controlsHtml();
-    var stamp = JSON.stringify([body, controls]);
+    var stamp = JSON.stringify([body, controls, consoleDark()]);
     if (stamp === lastRendered) return;
     lastRendered = stamp;
 
@@ -331,9 +391,9 @@ window.Host = (function () {
     bar.innerHTML = controls || '';
     bar.classList.toggle('show', Boolean(controls));
 
-    // Remember which sections the host opens or closes.
-    document.querySelectorAll('.hsec').forEach(function (d) {
-      d.addEventListener('toggle', function () { openSecs[d.dataset.sec] = d.open; });
+    // Remember which groups the host opens or closes.
+    document.querySelectorAll('.hgroup').forEach(function (d) {
+      d.addEventListener('toggle', function () { openGroups[d.dataset.group] = d.open; });
     });
   }
 
@@ -434,10 +494,22 @@ window.Host = (function () {
     });
   }
 
+  function onHeaderChange(e) {
+    var inp = e.target.closest('input[data-act]');
+    if (!inp) return;
+    if (inp.dataset.act === 't-dark') {
+      toggleDark(inp.checked);
+    } else if (inp.dataset.act === 't-override' && mode === 'live') {
+      send({ t: 'override', value: inp.checked });
+    }
+  }
+
   function init() {
     el('cbody').addEventListener('click', onBodyClick);
     el('controls').addEventListener('click', onControlsClick);
+    el('chead').addEventListener('change', onHeaderChange);
     el('browse-btn').addEventListener('click', startBrowse);
+    applyConsoleDark();
 
     var input = el('room-input');
     var params = new URLSearchParams(location.search);

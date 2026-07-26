@@ -108,19 +108,34 @@ window.Main = (function () {
     document.body.classList.toggle('dark', on);
   }
 
+  // Set dark mode and keep both toggles, storage, and the host console (via
+  // the sync layer) in step. Called by the local toggles and by remote
+  // commands from the host console.
+  function setDark(on) {
+    applyDark(on);
+    document.querySelectorAll('input[data-dark]').forEach(function (t) { t.checked = on; });
+    try { localStorage.setItem(DARK_KEY, on ? '1' : '0'); } catch (err) { /* ignore */ }
+    if (window.Sync) Sync.notify();
+  }
+
+  // Set the locked-band override (unlock all acts), keeping the board and
+  // its checkbox in step. Called locally and by remote command.
+  function setOverride(on) {
+    State.data.override = on;
+    State.save();
+    Board.sync();
+    var cb = document.getElementById('override-toggle');
+    if (cb) cb.checked = on;
+  }
+
   function initDarkMode() {
     var on = false;
     try { on = localStorage.getItem(DARK_KEY) === '1'; } catch (e) { /* default light */ }
     applyDark(on);
     // One toggle on the landing page, one on the board; keep them in step.
-    var toggles = document.querySelectorAll('input[data-dark]');
-    toggles.forEach(function (t) {
+    document.querySelectorAll('input[data-dark]').forEach(function (t) {
       t.checked = on;
-      t.addEventListener('change', function (e) {
-        applyDark(e.target.checked);
-        toggles.forEach(function (other) { other.checked = e.target.checked; });
-        try { localStorage.setItem(DARK_KEY, e.target.checked ? '1' : '0'); } catch (err) { /* ignore */ }
-      });
+      t.addEventListener('change', function (e) { setDark(e.target.checked); });
     });
   }
 
@@ -158,9 +173,7 @@ window.Main = (function () {
     });
 
     document.getElementById('override-toggle').addEventListener('change', function (e) {
-      State.data.override = e.target.checked;
-      State.save();
-      Board.sync();
+      setOverride(e.target.checked);
     });
 
     document.getElementById('restart-btn').addEventListener('click', restart);
@@ -181,5 +194,10 @@ window.Main = (function () {
 
   document.addEventListener('DOMContentLoaded', init);
 
-  return { showScreen: showScreen, afterClose: afterClose };
+  return {
+    showScreen: showScreen,
+    afterClose: afterClose,
+    setDark: setDark,
+    setOverride: setOverride
+  };
 })();

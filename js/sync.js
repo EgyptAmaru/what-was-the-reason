@@ -41,6 +41,7 @@ window.Sync = (function () {
       started: State.data.started,
       finished: State.data.finished,
       override: State.data.override,
+      dark: document.body.classList.contains('dark'),
       winners: State.data.winners,
       revealed: State.data.revealed,
       retired: State.data.retired,
@@ -65,10 +66,21 @@ window.Sync = (function () {
 
   function applyCommand(cmd) {
     if (!cmd || !cmd.t) return;
+
+    // Display preference: allowed at any time, including the landing/end
+    // screens, so it sits ahead of the started/finished guard.
+    if (cmd.t === 'dark') {
+      if (window.Main && Main.setDark) Main.setDark(!!cmd.value);
+      return;
+    }
+
     if (!State.data.started || State.data.finished) return;
     var openQid = Card.current().qid;
 
     switch (cmd.t) {
+      case 'override':
+        if (window.Main && Main.setOverride) Main.setOverride(!!cmd.value);
+        break;
       case 'open':
         if (!openQid && typeof cmd.qid === 'string' && Board.isOpenable(cmd.qid)) {
           Card.open(cmd.qid);
