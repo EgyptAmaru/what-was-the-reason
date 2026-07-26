@@ -24,8 +24,15 @@ window.Host = (function () {
   var roomCode = null;
   var snap = null;        // latest state snapshot from the TV
   var mode = null;        // 'live' | 'browse'
-  var previewQid = null;  // locally viewed question (does not touch the TV)
+  var previewQid = null;  // question peeked locally (disconnected/browse only)
+  var pendingOpen = null; // optimistic open target while the TV confirms
   var lastRendered = '';
+
+  // Disconnected-from-players mode: the host peeks privately without driving
+  // the shared TV. While on, the board view is locally unlocked so any
+  // question can be opened to read; card controls show but are inert.
+  var disconnected = false;
+  var localUnlock = false;
 
   // Which detail groups the host has expanded; survives re-renders so an
   // incoming snapshot does not fold the group they are reading. The
@@ -180,12 +187,9 @@ window.Host = (function () {
   function renderHeader() {
     el('room-label').textContent = mode === 'live' ? ('Room ' + roomCode) : 'Browsing';
 
-    // Remote toggles: dark mode always, unlock-acts only when connected.
-    var toggles = toggleControl('t-dark', 'Dark', consoleDark(), false);
-    if (mode === 'live') {
-      toggles += toggleControl('t-override', 'Unlock acts', !!(snap && snap.override), !snap);
-    }
-    el('c-toggles').innerHTML = toggles;
+    // Dark mode lives in the header so it is reachable from any view; the
+    // board-control toggles (unlock, disconnect) live on the board view.
+    el('c-toggles').innerHTML = toggleControl('t-dark', 'Dark mode', consoleDark(), false);
 
     var scores = el('c-scores');
     if (mode === 'live' && snap && snap.started) {
@@ -247,23 +251,21 @@ window.Host = (function () {
     var aVis = (window.Charts && Charts.visual(info.colId, info.row, 'answer')) || '';
     var aBody = ((window.Format && Format.answer(qid, q.answer)) || answerHtml(q.answer)) + aVis;
 
+    // kind: 'live' (card open on the shared TV, active controls),
+    //       'peek' (disconnected private view, controls shown but inert),
+    //       'browse' (no TV at all).
+    var kind = opts.kind;
     var h = '<div class="qdetail">';
 
-    if (opts.preview) {
-      // Tapping a square always lands here, privately. Sending the question
-      // to the shared screen is the deliberate, explicit action.
-      var canOpen = mode === 'live' && tileState(qid, info.row) !== 'locked';
+    if (kind === 'peek' || kind === 'browse') {
       h += '<div class="preview-bar"><button type="button" class="back" data-act="back">&larr; Back</button>' +
-        (canOpen
-          ? '<button type="button" class="open-tv" data-act="open-tv">Open on TV</button>'
-          : '<span>Preview · not shown on the TV</span>') +
-        '</div>';
+        '<span>Private view · not shown to players</span></div>';
     }
 
     h += '<div class="qmeta">' +
       '<span class="col-chip" style="--dot:' + colColor(info.colId) + '">' + esc(info.col.name) + '</span>' +
       '<span class="rowpts">R' + info.row + ' · ' + info.rowData.points + ' pts · ' + info.rowData.time + '</span>';
-    if (opts.live && snap && snap.open) {
+    if (kind === 'live' && snap && snap.open) {
       h += '<span class="facetag' + (snap.open.face === 'answer' ? ' answer' : '') + '">TV: ' +
         (snap.open.face === 'answer' ? 'Answer' : 'Question') + '</span>';
     }
@@ -271,7 +273,12 @@ window.Host = (function () {
 
     if (q.title) h += '<div class="qtitle">' + esc(q.title) + '</div>';
 
-    if (opts.live) {
+    if (kind === 'peek') {
+      // Static, disabled timer readout: the host is not driving the clock.
+      h += '<div class="timer-line"><span class="t">' + fmt(info.rowData.timeSeconds) +
+        '</span><span class="tstate">timer</span>' +
+        '<button type="button" class="tl-btn" disabled>Start</button></div>';
+    } else if (kind === 'live') {
       var t = timerNow();
       if (t) {
         var state = t.running ? 'running' : (t.remaining === t.total ? 'ready' : (t.remaining === 0 ? 'time' : 'paused'));
@@ -306,15 +313,37 @@ window.Host = (function () {
     return h;
   }
 
+  // Whether the board view treats every act as open. Browse has no locks;
+  // connected mirrors the TV override; disconnected uses the local toggle.
+  function viewUnlocked() {
+    if (mode === 'browse') return true;
+    return disconnected ? localUnlock : !!(snap && snap.override);
+  }
+
+  // Board-view tile look. Retired always reads retired; otherwise open when
+  // the view is unlocked or the row's act is the active band.
+  function gridTileState(qid, row) {
+    if (snap && snap.retired && snap.retired[qid]) return 'retired';
+    if (viewUnlocked()) return 'active';
+    return rowBand(row) === activeBandIndex() ? 'active' : 'locked';
+  }
+
   // A single grid that mirrors the TV board's proportions (row-label column
   // plus four equal columns, column headers, act bands), so it reads the
   // same on a phone or a desktop rather than a squished phone column.
   function gridHtml() {
-    var live = mode === 'live';
     var cols = D.columns.slice().sort(function (a, b) { return a.position - b.position; });
     var activeBand = activeBandIndex();
 
-    var h = '<div class="hgrid">';
+    var h = '';
+    if (mode === 'live') {
+      h += '<div class="hg-controls">' +
+        toggleControl('t-disconnect', 'Disconnect from players', disconnected, false) +
+        toggleControl('t-override', 'Unlock all acts', viewUnlocked(), false) +
+        '</div>';
+    }
+
+    h += '<div class="hgrid">';
     h += '<div class="hg-corner"></div>';
     cols.forEach(function (c) {
       h += '<div class="hg-colhead"><div class="hg-cname">' + esc(c.name) + '</div>' +
@@ -324,7 +353,7 @@ window.Host = (function () {
     D.rows.forEach(function (r) {
       var band = rowBand(r.row);
       if (bands[band][0] === r.row) {
-        var locked = live && !(snap && snap.override) && band !== activeBand;
+        var locked = mode === 'live' && !viewUnlocked() && band !== activeBand;
         h += '<div class="hg-act' + (locked ? ' locked' : '') + '"><span class="rule"></span>' +
           esc(D.acts[band].label) + '<span class="rule"></span></div>';
       }
@@ -332,10 +361,7 @@ window.Host = (function () {
         '</span><span class="rp">' + r.points + ' pts</span></div>';
       cols.forEach(function (c) {
         var qid = c.id + ':' + r.row;
-        var state = live ? tileState(qid, r.row) : 'active';
-        // Every tile previews privately, including locked rows (peeking
-        // ahead is host material); the state classes only carry the look.
-        h += '<button type="button" class="mini-tile ' + state +
+        h += '<button type="button" class="mini-tile ' + gridTileState(qid, r.row) +
           ' browsable" data-col="' + c.id + '" data-qid="' + qid + '">' + r.points + '</button>';
       });
     });
@@ -344,9 +370,22 @@ window.Host = (function () {
   }
 
   function controlsHtml() {
-    if (mode !== 'live' || !snap || !snap.open || previewQid) return null;
+    if (mode !== 'live') return null;
+    var t = snap && snap.teams ? snap.teams : ['Team 1', 'Team 2'];
+
+    // Disconnected peek: points shown but inert, so the host understands
+    // nothing they do here changes the shared board.
+    if (disconnected && previewQid) {
+      var pw = (snap && snap.winners && snap.winners[previewQid]) || [];
+      return '<div class="cwrap">' +
+        '<span class="cwrap-note">Disconnected</span>' +
+        '<button type="button" class="ctrl wred' + (pw.indexOf(0) !== -1 ? ' on' : '') + '" disabled>' + esc(t[0]) + '</button>' +
+        '<button type="button" class="ctrl wblue' + (pw.indexOf(1) !== -1 ? ' on' : '') + '" disabled>' + esc(t[1]) + '</button>' +
+        '</div>';
+    }
+
+    if (!snap || !snap.open || disconnected) return null;
     var qid = snap.open.qid;
-    var t = snap.teams || ['Team 1', 'Team 2'];
     var winners = (snap.winners && snap.winners[qid]) || [];
     var flipLabel = snap.open.face === 'answer' ? 'Question' : 'Answer';
 
@@ -363,8 +402,9 @@ window.Host = (function () {
   }
 
   function bodyHtml() {
-    if (previewQid) return questionHtml(previewQid, { preview: true });
-    if (mode === 'browse') return gridHtml();
+    if (mode === 'browse') {
+      return previewQid ? questionHtml(previewQid, { kind: 'browse' }) : gridHtml();
+    }
     if (!snap) return msg('Waiting for the board', 'Open the game on the TV. This screen joins it automatically.');
     if (!snap.started) return msg('Waiting for team names', 'Enter the teams on the TV to begin.');
     if (snap.finished) {
@@ -373,7 +413,14 @@ window.Host = (function () {
         esc(t[s[0] > s[1] ? 0 : 1]) + ' wins';
       return msg('Game over · ' + line, esc(t[0]) + ' ' + s[0] + ' pts · ' + esc(t[1]) + ' ' + s[1] + ' pts');
     }
-    if (snap.open) return questionHtml(snap.open.qid, { live: true });
+    // Disconnected: peek privately, nothing here touches the TV.
+    if (disconnected) {
+      return previewQid ? questionHtml(previewQid, { kind: 'peek' }) : gridHtml();
+    }
+    // Connected: mirror the TV. A just-tapped tile shows optimistically
+    // until the snapshot confirms, to avoid a grid-then-card flash.
+    if (snap.open) return questionHtml(snap.open.qid, { kind: 'live' });
+    if (pendingOpen) return questionHtml(pendingOpen, { kind: 'live' });
     return gridHtml();
   }
 
@@ -403,21 +450,10 @@ window.Host = (function () {
     var back = e.target.closest('[data-act="back"]');
     if (back) { previewQid = null; render(); return; }
 
-    // The explicit send-to-shared-screen action from a preview.
-    var openTv = e.target.closest('[data-act="open-tv"]');
-    if (openTv) {
-      if (mode === 'live' && previewQid) {
-        send({ t: 'open', qid: previewQid });
-        previewQid = null;
-        render();
-      }
-      return;
-    }
-
-    // Timer controls sit beside the readout in the live question view.
+    // Timer controls (live connected card only; disabled otherwise).
     var tbtn = e.target.closest('[data-act="timer"], [data-act="timer-reset"]');
     if (tbtn) {
-      if (mode === 'live' && snap && snap.open && !previewQid) {
+      if (mode === 'live' && !disconnected && snap && snap.open) {
         send({ t: tbtn.dataset.act === 'timer' ? 'timer' : 'timer-reset' });
       }
       return;
@@ -425,14 +461,42 @@ window.Host = (function () {
 
     var tile = e.target.closest('.mini-tile');
     if (!tile) return;
-    // Tile taps are always private previews; nothing reaches the TV here.
-    previewQid = tile.dataset.qid;
+    var qid = tile.dataset.qid;
+    if (mode === 'live' && !disconnected) {
+      // Connected: open on the shared TV directly (if the board allows it).
+      if (gridTileState(qid, Number(qid.split(':')[1])) !== 'locked') {
+        pendingOpen = qid;
+        send({ t: 'open', qid: qid });
+        render();
+      }
+    } else {
+      // Disconnected or browse: peek privately, never touches the TV.
+      previewQid = qid;
+      render();
+    }
+  }
+
+  function onBodyChange(e) {
+    var inp = e.target.closest('input[data-act]');
+    if (!inp) return;
+    if (inp.dataset.act === 't-disconnect') {
+      setDisconnected(inp.checked);
+    } else if (inp.dataset.act === 't-override') {
+      if (disconnected) { localUnlock = inp.checked; render(); }
+      else if (mode === 'live') { send({ t: 'override', value: inp.checked }); }
+    }
+  }
+
+  function setDisconnected(on) {
+    disconnected = on;
+    previewQid = null;
+    localUnlock = on; // disconnecting unlocks the private board view
     render();
   }
 
   function onControlsClick(e) {
     var btn = e.target.closest('[data-act]');
-    if (!btn || !snap || !snap.open) return;
+    if (!btn || disconnected || !snap || !snap.open) return;
     switch (btn.dataset.act) {
       case 'flip':
         send({ t: 'flip', face: snap.open.face === 'answer' ? 'question' : 'answer' });
@@ -484,6 +548,7 @@ window.Host = (function () {
 
       fb.onValue(fb.ref(fb.db, 'rooms/' + roomCode + '/state'), function (s) {
         snap = s.val();
+        pendingOpen = null; // the snapshot is now the source of truth
         render();
       });
       fb.onValue(fb.ref(fb.db, '.info/connected'), function (s) {
@@ -506,6 +571,7 @@ window.Host = (function () {
 
   function init() {
     el('cbody').addEventListener('click', onBodyClick);
+    el('cbody').addEventListener('change', onBodyChange);
     el('controls').addEventListener('click', onControlsClick);
     el('chead').addEventListener('change', onHeaderChange);
     el('browse-btn').addEventListener('click', startBrowse);
