@@ -257,14 +257,13 @@ window.Host = (function () {
     var kind = opts.kind;
     var h = '<div class="qdetail">';
 
-    if (kind === 'peek' || kind === 'browse') {
-      h += '<div class="preview-bar"><button type="button" class="back" data-act="back">&larr; Back</button>' +
-        '<span>Private view · not shown to players</span></div>';
-    }
+    // Back sits at the top in every state; it is how the host returns to the
+    // board view (closing the card on the TV when connected).
+    h += '<div class="preview-bar"><button type="button" class="back" data-act="back">&larr; Back</button></div>';
 
     h += '<div class="qmeta">' +
       '<span class="col-chip" style="--dot:' + colColor(info.colId) + '">' + esc(info.col.name) + '</span>' +
-      '<span class="rowpts">R' + info.row + ' · ' + info.rowData.points + ' pts · ' + info.rowData.time + '</span>';
+      '<span class="rowpts">R' + info.row + '</span>';
     if (kind === 'live' && snap && snap.open) {
       h += '<span class="facetag' + (snap.open.face === 'answer' ? ' answer' : '') + '">TV: ' +
         (snap.open.face === 'answer' ? 'Answer' : 'Question') + '</span>';
@@ -393,7 +392,6 @@ window.Host = (function () {
       '<button type="button" class="ctrl primary" data-act="flip">' + flipLabel + '</button>' +
       '<button type="button" class="ctrl wred' + (winners.indexOf(0) !== -1 ? ' on' : '') + '" data-act="winner" data-team="0">' + esc(t[0]) + '</button>' +
       '<button type="button" class="ctrl wblue' + (winners.indexOf(1) !== -1 ? ' on' : '') + '" data-act="winner" data-team="1">' + esc(t[1]) + '</button>' +
-      '<button type="button" class="ctrl quiet" data-act="close" aria-label="Close card">&#10005;</button>' +
       '</div>';
   }
 
@@ -448,7 +446,15 @@ window.Host = (function () {
 
   function onBodyClick(e) {
     var back = e.target.closest('[data-act="back"]');
-    if (back) { previewQid = null; render(); return; }
+    if (back) {
+      if (mode === 'live' && !disconnected && snap && snap.open) {
+        send({ t: 'close' }); // connected: close the card on the TV too
+      } else {
+        previewQid = null;
+        render();
+      }
+      return;
+    }
 
     // Timer controls (live connected card only; disabled otherwise).
     var tbtn = e.target.closest('[data-act="timer"], [data-act="timer-reset"]');
