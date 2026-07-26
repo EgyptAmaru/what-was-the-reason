@@ -131,6 +131,8 @@ The reason all 3 of the elements below were cut: the ruleset must stay explainab
 
 **Favicon:** assets/favicon.svg (the four-column-color dots on the paper ground), linked from both index.html and host.html.
 
+**Screen wake lock (js/wakelock.js, board only):** Keeps the shared screen awake during play via the Screen Wake Lock API, since the TV gets no input when the host drives from the console. Re-acquires on visibility change and on first gesture; a no-op where the API is absent (some smart-TV browsers), where the TV's own screen-timeout setting is the fallback.
+
 **Sound (js/sound.js, board only):** Two synthesized Web Audio cues on the shared screen, no audio files. A short alarm when a question timer reaches zero, but only if the card is open on the Question face (not the Answer face); a celebratory flourish when the winner screen appears. Browsers block audio until a user gesture, so the context is primed on the first interaction with the TV and cues are guarded (skipped if the context never unlocked, e.g. a fully remote-driven session where the TV gets no gesture).
 
 **The Board**: 
