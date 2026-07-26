@@ -30,8 +30,16 @@ window.Host = (function () {
   var snap = null;        // latest state snapshot from the TV
   var mode = null;        // 'live' | 'browse'
   var previewQid = null;  // question peeked locally (disconnected/browse only)
-  var pendingOpen = null; // optimistic open target while the TV confirms
   var lastRendered = '';
+
+  // Optimistic overlay: reflect a just-sent command immediately, then let the
+  // next snapshot from the TV reconcile (all cleared when a snapshot lands).
+  // Without this, flip/winner/back would only respond after a full round-trip,
+  // which feels laggy on a weak connection.
+  var pendingOpen = null;      // qid opened optimistically
+  var pendingClose = false;    // card closed optimistically (show the board)
+  var pendingFace = {};        // qid -> optimistic 'question' | 'answer'
+  var pendingWinners = {};     // qid -> optimistic winners array
 
   // Disconnected-from-players mode: the host peeks privately without driving
   // the shared TV. While on, the board view is locally unlocked so any
@@ -388,10 +396,10 @@ window.Host = (function () {
         '</div>';
     }
 
-    if (!snap || !snap.open || disconnected) return null;
-    var qid = snap.open.qid;
-    var winners = (snap.winners && snap.winners[qid]) || [];
-    var flipLabel = snap.open.face === 'answer' ? 'Question' : 'Answer';
+    var qid = effOpenQid();
+    if (!qid || disconnected) return null;
+    var winners = effWinners(qid);
+    var flipLabel = effFace(qid) === 'answer' ? 'Question' : 'Answer';
 
     return '<div class="cwrap">' +
       '<button type="button" class="ctrl primary" data-act="flip">' + flipLabel + '</button>' +
@@ -435,10 +443,10 @@ window.Host = (function () {
     if (disconnected) {
       return previewQid ? questionHtml(previewQid, { kind: 'peek' }) : gridHtml();
     }
-    // Connected: mirror the TV. A just-tapped tile shows optimistically
-    // until the snapshot confirms, to avoid a grid-then-card flash.
-    if (snap.open) return questionHtml(snap.open.qid, { kind: 'live' });
-    if (pendingOpen) return questionHtml(pendingOpen, { kind: 'live' });
+    // Connected: mirror the TV, with optimistic open/close so the view
+    // responds immediately and reconciles on the next snapshot.
+    var openQid = effOpenQid();
+    if (openQid) return questionHtml(openQid, { kind: 'live' });
     return gridHtml();
   }
 
@@ -477,8 +485,10 @@ window.Host = (function () {
 
     var back = e.target.closest('[data-act="back"]');
     if (back) {
-      if (mode === 'live' && !disconnected && snap && snap.open) {
-        send({ t: 'close' }); // connected: close the card on the TV too
+      if (mode === 'live' && !disconnected && effOpenQid()) {
+        pendingClose = true;   // optimistic: show the board immediately
+        send({ t: 'close' });  // connected: close the card on the TV too
+        render();
       } else {
         previewQid = null;
         render();
@@ -501,6 +511,7 @@ window.Host = (function () {
     if (mode === 'live' && !disconnected) {
       // Connected: open on the shared TV directly (if the board allows it).
       if (gridTileState(qid, Number(qid.split(':')[1])) !== 'locked') {
+        pendingClose = false;
         pendingOpen = qid;
         send({ t: 'open', qid: qid });
         render();
@@ -512,6 +523,29 @@ window.Host = (function () {
     }
   }
 
+  /* ---------- effective (snapshot + optimistic) view state ---------- */
+
+  function effOpenQid() {
+    if (pendingClose) return null;
+    if (snap && snap.open) return snap.open.qid;
+    return pendingOpen;
+  }
+  function effFace(qid) {
+    if (pendingFace[qid]) return pendingFace[qid];
+    if (snap && snap.open && snap.open.qid === qid) return snap.open.face;
+    return 'question';
+  }
+  function effWinners(qid) {
+    if (pendingWinners[qid] !== undefined) return pendingWinners[qid];
+    return (snap && snap.winners && snap.winners[qid]) || [];
+  }
+  function clearPending() {
+    pendingOpen = null;
+    pendingClose = false;
+    pendingFace = {};
+    pendingWinners = {};
+  }
+
   function setDisconnected(on) {
     disconnected = on;
     previewQid = null;
@@ -521,16 +555,23 @@ window.Host = (function () {
 
   function onControlsClick(e) {
     var btn = e.target.closest('[data-act]');
-    if (!btn || disconnected || !snap || !snap.open) return;
+    var qid = effOpenQid();
+    if (!btn || disconnected || !qid) return;
     switch (btn.dataset.act) {
       case 'flip':
-        send({ t: 'flip', face: snap.open.face === 'answer' ? 'question' : 'answer' });
+        var newFace = effFace(qid) === 'answer' ? 'question' : 'answer';
+        pendingFace[qid] = newFace;              // optimistic
+        send({ t: 'flip', face: newFace });
+        render();
         break;
       case 'winner':
-        send({ t: 'winner', team: Number(btn.dataset.team) });
-        break;
-      case 'close':
-        send({ t: 'close' });
+        var team = Number(btn.dataset.team);
+        var w = effWinners(qid).slice();
+        var at = w.indexOf(team);
+        if (at === -1) w.push(team); else w.splice(at, 1);
+        pendingWinners[qid] = w.sort();          // optimistic
+        send({ t: 'winner', team: team });
+        render();
         break;
     }
   }
@@ -573,7 +614,7 @@ window.Host = (function () {
 
       fb.onValue(fb.ref(fb.db, 'rooms/' + roomCode + '/state'), function (s) {
         snap = s.val();
-        pendingOpen = null; // the snapshot is now the source of truth
+        clearPending(); // the snapshot is now the source of truth
         render();
       });
       fb.onValue(fb.ref(fb.db, '.info/connected'), function (s) {
