@@ -16,6 +16,7 @@
   --team-red: #D96F5C;
   --team-blue: #5B7FB0;
   --lift: 0 10px 26px rgba(51, 48, 43, 0.13);
+  --tile-label: #8f8b84;
 }
 
 /* Console dark mode: mirrors the game's dark palette. In live mode it
@@ -28,6 +29,7 @@ body.dark {
   --tile: #3E3B35;
   --card: #2B2925;
   --lift: 0 10px 26px rgba(0, 0, 0, 0.5);
+  --tile-label: #8b857b;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -184,11 +186,10 @@ button { font-family: inherit; color: inherit; }
 .hg-rlabel .rp { font-size: clamp(0.55rem, 1vw, 0.65rem); color: var(--ink-soft); }
 .mini-tile {
   border: none; border-radius: clamp(8px, 1vw, 13px); background: var(--tile);
-  color: #8f8b84; font-family: 'Bricolage Grotesque', sans-serif;
+  color: var(--tile-label); font-family: 'Bricolage Grotesque', sans-serif;
   font-weight: 600; font-size: clamp(0.9rem, 1.7vw, 1.25rem);
   padding: clamp(12px, 2.4vw, 26px) 0; cursor: pointer;
 }
-body.dark .mini-tile { color: #8b857b; }
 .mini-tile.active { color: var(--paper); }
 .mini-tile.active[data-col="estimation"] { background: var(--est); }
 .mini-tile.active[data-col="logic-paradox"] { background: var(--logic); }
