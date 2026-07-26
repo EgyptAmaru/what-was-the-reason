@@ -417,7 +417,14 @@ button { font-family: inherit; color: inherit; }
 
 @media (max-width: 720px) {
   .grid { grid-template-columns: 52px repeat(4, 1fr); }
-  .board-top { justify-content: center; }
+  /* Both team trackers share the top row; the title and toggles drop
+     below them (order pushes .board-mid last, its full basis forces a
+     wrap). If a narrow screen cannot fit both teams side by side they
+     stack, but always above the title. */
+  .board-top { gap: 12px 14px; }
+  .team-status { min-width: 0; flex: 1 1 40%; }
+  .team-status .bar-track { width: 100%; }
+  .board-mid { order: 3; flex-basis: 100%; }
   .footer-split { flex-direction: column; align-items: stretch; gap: 16px; }
   .answer-btn { align-self: flex-end; }
   .face { padding: 16px 18px 18px; }
